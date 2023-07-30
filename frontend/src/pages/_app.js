@@ -3,6 +3,7 @@ import 'primereact/resources/themes/nova-alt/theme.css'
 import "primereact/resources/primereact.min.css";
 // import "primeicons/primeicons.css"; 
 // import "@fullcalendar/common/main.css";
+
 import Head from 'next/head';
 
 export default function App({ Component, pageProps }) {

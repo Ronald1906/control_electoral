@@ -10,7 +10,6 @@ import {InputText} from 'primereact/inputtext'
 
 const Inicio = () => {
   const [Nombre, setNombre]= useState('Ronald')
-  const [Junta, setJunta]= useState('Unidad Educativa xxxxxx')
   const [DlgNovedades, setDlgNovedades]= useState(false)
 
   const CDlgNovedades=(()=>{
@@ -21,10 +20,9 @@ const Inicio = () => {
     <div className={styles.bodyusers}>
       <div className={styles.contenedor}>
         <h2> Bienvenido {Nombre} </h2>
-        <h3> {Junta} </h3>
         <Button label='Registrar Novedades' onClick={()=>{setDlgNovedades(true)}} />
         <DataTable>
-          <Column field='mesa' header='MESA' />
+          <Column field='mesa' header='MESA' alignHeader='center' />
           <Column field='mesa' header='INICIAR' />
         </DataTable>
       </div>

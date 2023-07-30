@@ -3,6 +3,7 @@ import styles from '@/styles/Home.module.css'
 import {InputText} from 'primereact/inputtext'
 import {Button} from 'primereact/button'
 
+
 const Index = () => {
   return (
     <div className={styles.loginpage}>
