@@ -3,10 +3,9 @@ import styles from '@/styles/Home.module.css'
 import Navbar from './Navbar'
 import axios from 'axios'
 import SideMenu from './SideMenu'
-import {FaAngleDoubleLeft, FaHome,
+import {FaHome,
    FaUser, FaClipboardList, FaClipboard,
   FaFolderMinus, FaUserClock, FaBook} from "react-icons/fa"
-import {RiFeedbackFill} from 'react-icons/ri'
 
 const Sidebar = ({children}) => {
 //   const [NombreLog, setNombreLog]= useState('')
@@ -14,7 +13,8 @@ const Sidebar = ({children}) => {
   const MenuSAdmin=[
     {id: 1, label:'Inicio', icon: FaHome , link:'/dashboard'},
     {id: 2, label:'Usuarios', icon: FaUser, link:'/usuarios'},
-    {id: 3, label:'Recintos', icon: FaClipboardList, link:'/recintos'}
+    {id: 3, label:'Recintos', icon: FaClipboardList, link:'/recintos'},
+    {id: 4, label:'Candidatos', icon: FaFolderMinus, link:'/candidatos'}
   ]
 
   /*useEffect(()=>{

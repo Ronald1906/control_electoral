@@ -201,5 +201,12 @@
   margin-bottom: 10px;
 }
 
+.registros input[type='text']{
+  margin-bottom: 10px;
+}
+
+.registros input[type='password']{
+  margin-bottom: 10px;
+}
 
 

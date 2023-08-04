@@ -7,7 +7,7 @@ const Navbar = ({ valor }) => {
   const router = useRouter()
 
   const CloseSession = () => {
-    window.localStorage.removeItem('token_stodgo')
+    window.localStorage.removeItem('token_eleccion_2023_app')
     router.push('/')
   }
 

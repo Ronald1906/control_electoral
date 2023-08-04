@@ -4,7 +4,7 @@ import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Dialog } from 'primereact/dialog'
 import { InputText } from 'primereact/inputtext'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '@/styles/Home.module.css'
 import * as XLSX from 'xlsx'
 import Swal from "sweetalert2"
@@ -15,6 +15,17 @@ const Recintos = () => {
 
   const [DlgRegister, setDlgRegister]= useState(false)
   const [FileDatos, setFileDatos]= useState([])
+  const [Datos, setDatos]= useState([])
+
+  const consulta=(()=>{
+    axios.get(process.env.NEXT_PUBLIC_BACKEND+'recintos').then((result)=>{
+      setDatos(result.data)
+    })
+  })
+
+  useEffect(()=>{
+    consulta()
+  },[])
 
   const HeaderTable=(()=>{
     return(
@@ -185,9 +196,9 @@ const Recintos = () => {
       }).then((result)=>{
         CDlgRegister()
         Swal.fire({
-          title:'¡Registro Éxitoso!',
-          icon: 'success',
-          text: 'Se registraron los recintos'
+          title: result.data.title,
+          icon: result.data.icon,
+          text: result.data.text
         })
       })
     }
@@ -196,12 +207,18 @@ const Recintos = () => {
 
   return (
     <Sidebar>
-      <DataTable header={HeaderTable}>
-        <Column field='' header='Ciudad' />
-        <Column field='' header='Parroquia' />
-        <Column field='' header='Institucion' />
-        <Column field='' header='Junta' />
-        <Column field='' header='Código' />
+      <DataTable header={HeaderTable} value={Datos} paginator 
+      stripedRows rows={10}>
+        <Column field='codigo_canton' header='COD CANTON' align='center' />
+        <Column field='nombre_canton' header='CANTON' align='center' />
+        <Column field='codigo_parroquia' header='COD PARROQUIA' align='center' />
+        <Column field='nombre_parroquia' header='PARROQUIA' align='center' />
+        <Column field='nombre_zona' header='ZONA' align='center' />
+        <Column field='codigo_recinto' header='COD RECINTO' align='center' />
+        <Column field='nombre_recinto' header='RECINTO' align='center' />
+        <Column field='direccion' header='DIRECCIÓN' align='center' />
+        <Column field='juntas_fem' header='TOTAL JUNTAS F' align='center' />
+        <Column field='juntas_mas' header='TOTAL JUNTAS M' align='center' />
       </DataTable>
       <Dialog visible={DlgRegister} onHide={CDlgRegister} style={{width:'30%'}} 
       header='Registro de Recintos'>
