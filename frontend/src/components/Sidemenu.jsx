@@ -12,6 +12,7 @@ const Sidemenu = ({ valor }) => {
   };
 
   useEffect(() => {
+    console.log(valor)
     const currentRoute = valor.menu.find((item) => item.link === router.pathname);
     if (currentRoute) {
       setSelectedOption(currentRoute.id);

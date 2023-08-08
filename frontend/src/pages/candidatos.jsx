@@ -17,7 +17,7 @@ const candidatos = () => {
 
   const consulta=(()=>{
     axios.get(process.env.NEXT_PUBLIC_BACKEND+'candidatos').then((result)=>{
-        setDatos(result.data)
+      setDatos(result.data)
     })
   })
 
@@ -83,27 +83,28 @@ const candidatos = () => {
   const RegistrarDatos=(e)=>{
     e.preventDefault()
     if(FileDatos.length==0){
-        setDlgRegistrar(false)
-        Swal.fire({
-            title:'¡Error!',
-            icon: 'error',
-            text: 'No se encontro ningun dato en el archivo'
-        }).then((result)=>{
-            if(result.isConfirmed){
-                setDlgRegistrar(true)
-            }
-        })
+      setDlgRegistrar(false)
+      Swal.fire({
+        title:'¡Error!',
+        icon: 'error',
+        text: 'No se encontro ningun dato en el archivo'
+      }).then((result)=>{
+        if(result.isConfirmed){
+          setDlgRegistrar(true)
+        }
+      })
     }else{
-        axios.post(process.env.NEXT_PUBLIC_BACKEND+'candidatos',{
-            datos: FileDatos
-        }).then((result)=>{
-            CDlgRegistrar()
-            Swal.fire({
-                title: result.data.title,
-                icon: result.data.icon,
-                text: result.data.text
-            })
+      axios.post(process.env.NEXT_PUBLIC_BACKEND+'candidatos',{
+        datos: FileDatos
+      }).then((result)=>{
+        CDlgRegistrar()
+        consulta()
+        Swal.fire({
+          title: result.data.title,
+          icon: result.data.icon,
+          text: result.data.text
         })
+      })
     }
   }
 

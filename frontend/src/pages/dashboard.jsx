@@ -10,11 +10,11 @@ const Dashboard = () => {
 
   useEffect(()=>{
     const consulta=(()=>{
-      axios.get(process.env.NEXT_PUBLIC_BACKEND+'registros').then((result)=>{
+      /*axios.get(process.env.NEXT_PUBLIC_BACKEND+'registros').then((result)=>{
         const datos=result.data
         const ordenado= datos.sort((a,b)=>b.total - a.total)
         setListas(ordenado)
-      })
+      })*/
     })
 
     consulta()

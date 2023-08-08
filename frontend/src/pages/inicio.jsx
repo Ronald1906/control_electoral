@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '@/styles/Home.module.css'
 import {DataTable} from 'primereact/datatable'
 import {Column} from 'primereact/column'
@@ -7,6 +7,8 @@ import {Dialog} from 'primereact/dialog'
 import {Dropdown} from 'primereact/dropdown'
 import {InputTextarea} from 'primereact/inputtextarea'
 import {InputText} from 'primereact/inputtext'
+import Navbar from '@/components/Navbar'
+import axios from 'axios'
 
 const Inicio = () => {
   const [Nombre, setNombre]= useState('Ronald')
@@ -16,8 +18,19 @@ const Inicio = () => {
     setDlgNovedades(false)
   })
 
+  useEffect(()=>{
+    axios.get(process.env.NEXT_PUBLIC_BACKEND+'usuarios/datos',{
+      headers:{
+        token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app')
+      }
+    }).then((result)=>{
+      console.log(result.data)
+    })
+  },[])
+
   return (
     <div className={styles.bodyusers}>
+      <Navbar />
       <div className={styles.contenedor}>
         <h2> Bienvenido {Nombre} </h2>
         <Button label='Registrar Novedades' onClick={()=>{setDlgNovedades(true)}} />

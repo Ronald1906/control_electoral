@@ -4,27 +4,12 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken')
 const cors = require('cors')
 const pool =require('./Database/database');
+const dotenv = require('dotenv')
 
 app.use(express.json())
 
-//Creamos un middleware para la validacion del token
-const verifyTokenMiddleware = (req, res, next) => {
-    const token = req.headers['token_eleccion_2023_app'];
-    if (token) {
-      jwt.verify(token, process.env.CLVSECRET, (err, decoded) => {
-        if (err) {
-          res.send({ auth: false, message: 'Fallo al autenticar el token' });
-        } else {
-          let objeto = {
-            exp: decoded.exp,
-            data: decoded.data
-          };
-          req.valtoken = objeto;
-          next();
-        }
-      });
-    }
-};
+//Seteando las variables de entorno
+dotenv.config({path: './Env/.env'})
 
 
 //Seteando las cookies
@@ -32,10 +17,31 @@ app.use(bodyParser.json({limit: "50mb", extended: true}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true}))
 
 app.use(cors({
-    origin:['http://localhost:7000'], //Direccion de origen de donde provienen las peticiones
-    methods: ['GET', 'POST'],
-    credentials: true
+  origin:['http://localhost:7000'], //Direccion de origen de donde provienen las peticiones
+  methods: ['GET', 'POST'],
+  credentials: true
 }))
+
+//Creamos un middleware para la validacion del token
+const verifyTokenMiddleware = (req, res, next) => {
+  const token = req.headers['token_eleccion_2023_app'];
+  if (token) {
+    jwt.verify(token, process.env.CLVSECRET, (err, decoded) => {
+      if (err) {
+        res.send({ auth: false, message: 'Fallo al autenticar el token' });
+      } else {
+        let objeto = {
+          exp: decoded.exp,
+          data: decoded.data
+        };
+        req.valtoken = objeto;
+        next();
+      }
+    });
+  }
+};
+
+module.exports = verifyTokenMiddleware
 
 const recintoRouter= require('./Controller/RecintoController')
 app.use('/recintos', recintoRouter)
@@ -64,4 +70,5 @@ pool.connect((error, client, release) => {
       })
     }
 });
+
 

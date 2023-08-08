@@ -195,6 +195,7 @@ const Recintos = () => {
         datos: FileDatos   
       }).then((result)=>{
         CDlgRegister()
+        consulta()
         Swal.fire({
           title: result.data.title,
           icon: result.data.icon,
