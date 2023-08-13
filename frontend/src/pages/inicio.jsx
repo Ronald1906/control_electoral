@@ -18,7 +18,7 @@ const Inicio = () => {
     setDlgNovedades(false)
   })
 
-  useEffect(()=>{
+  /*useEffect(()=>{
     axios.get(process.env.NEXT_PUBLIC_BACKEND+'usuarios/datos',{
       headers:{
         token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app')
@@ -26,7 +26,7 @@ const Inicio = () => {
     }).then((result)=>{
       console.log(result.data)
     })
-  },[])
+  },[])*/
 
   return (
     <div className={styles.bodyusers}>

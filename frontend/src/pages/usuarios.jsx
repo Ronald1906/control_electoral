@@ -14,12 +14,12 @@ import { MultiSelect } from 'primereact/multiselect';
 
 const Usuarios = () => {
 
-  const [DlgRegisterI, setDlgRegisterI]= useState(false)
   const [DlgSlcUser, setDlgSlcUser]= useState(false)
   const [DlgRegisterAdm, setDlgRegisterAdm]= useState(false)
   const [DlgSupervisor, setDlgSupervisor]= useState(false)
   const [DlgCoordinador, setDlgCoordinador]= useState(false)
   const [DlgVeedor, setDlgVeedor]= useState(false)
+  const [DlgParroquias, setDlgParroquias]= useState(false)
   const [InpCedula, setInpCedula]= useState('')
   const [InpNombres, setInpNombres]= useState('')
   const [InpApellidos, setInpApellidos]= useState('')
@@ -27,16 +27,19 @@ const Usuarios = () => {
   const [DrpParroquia, setDrpParroquia]= useState([])
   const [DrpZona, setDrpZona]= useState([])
   const [DrpJuntas, setDrpJuntas]= useState([])
+  const [DrpRecinto, setDrpRecinto]= useState([])
   const [SlcCanton, setSlcCanton]= useState('')
   const [SlcTUsuario, setSlcTUsuario]= useState('')
   const [InpUsuario, setInpUsuario]= useState('')
   const [InpPass, setInpPass]= useState('')
   const [InpCelular, setInpCelular]= useState('')
-  const [InpCorreo, setInpCorreo]= useState('')
-  const [SlcParroquia, setSlcParroquia]= useState('')
+  const [SlcParroquia, setSlcParroquia]= useState([])
+  const [SlcParroquias, setSlcParroquias]= useState('')
   const [SlcZona, setSlcZona]= useState('')
   const [SlcJuntas, setSlcJuntas] = useState([]);
+  const [Parroquias, setParroquias]= useState([])
   const [Recintos, setRecintos]= useState([])
+  const [SlcRecintos, setSlcRecintos]= useState('')
   const [DlgViewRecintos, setDlgViewRecintos]= useState(false)
   const [UsuariosRegistrados, setUsuariosRegistrados]= useState([])
 
@@ -50,6 +53,7 @@ const Usuarios = () => {
   const consulta1=(()=>{
     axios.get(process.env.NEXT_PUBLIC_BACKEND+'recintos/recintos').then((result)=>{
       setDrpCanton(result.data)
+      console.log(result.data)
     })
   })
 
@@ -75,12 +79,6 @@ const Usuarios = () => {
       </div>
     )
   })  
-
-  const CDlgRegister=(()=>{
-    setDlgRegisterI(false)
-    setSlcCanton('')
-
-  })
 
   const CDlgSlcUser=(()=>{
     setDlgSlcUser(false)
@@ -148,7 +146,6 @@ const Usuarios = () => {
     setInpNombres('')
     setInpApellidos('')
     setInpCelular('')
-    setInpCorreo('')
     setSlcCanton('')
     setSlcParroquia('')
     setDrpParroquia([])
@@ -163,12 +160,11 @@ const Usuarios = () => {
     setInpNombres('')
     setInpApellidos('')
     setInpCelular('')
-    setInpCorreo('')
     setSlcCanton('')
-    setSlcParroquia('')
-    setSlcZona('')
+    setSlcParroquias('')
+    setSlcRecintos('')
     setDrpParroquia([])
-    setDrpZona([])
+    setDrpRecinto([])
     setDlgCoordinador(false)
     setSlcTUsuario('')
     setDlgSlcUser(true)
@@ -181,12 +177,11 @@ const Usuarios = () => {
     setInpNombres('')
     setInpApellidos('')
     setInpCelular('')
-    setInpCorreo('')
     setSlcCanton('')
-    setSlcParroquia('')
-    setSlcZona('')
+    setSlcParroquias('')
     setDrpParroquia([])
-    setDrpZona([])
+    setDrpRecinto([])
+    setSlcRecintos('')
     setDlgVeedor(false)
     setSlcTUsuario('')
     setDlgSlcUser(true)
@@ -203,15 +198,14 @@ const Usuarios = () => {
   //Registro de usuarios supervisores
   const RegistrarSuperv=(e)=>{
     e.preventDefault()
-    if(SlcCanton !== '' && SlcParroquia !== ''){
+    if(SlcCanton !== '' && SlcParroquia.length>0){
       axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/add_superv',{
         cedula: InpCedula,
         nombres: InpNombres,
         apellidos: InpApellidos,
         celular: InpCelular,
-        correo: InpCorreo,
         cod_canton: SlcCanton,
-        cod_parroquia: SlcParroquia
+        recintos: SlcParroquia
       }).then((result)=>{
         if(result.data.icon === 'success'){
           CDlgSupervisor()
@@ -251,25 +245,30 @@ const Usuarios = () => {
 
   //Para filtrar las zonas acorde a la parroquia seleccionada
   const SelectParroquia=(()=>{
-    if(SlcParroquia !== ''){
-      const filtro= DrpParroquia.filter((e)=>e.codigo_parroquia === SlcParroquia )
-      setDrpZona(filtro[0].zonas)
+    if(SlcParroquias !== ''){
+      const filtro= DrpParroquia.filter((e)=>e.codigo_parroquia === SlcParroquias )
+      let array=[]
+      for(let i=0; i<filtro[0].zonas.length; i++){
+        for(let j=0; j<filtro[0].zonas[i].recintos.length; j++){
+          array.push(filtro[0].zonas[i].recintos[j])
+        }
+      }
+      setDrpRecinto(array)
     }
   })
 
   //Registro de usuarios coordinadores
   const RegistrarCoord=(e)=>{
     e.preventDefault()
-    if(SlcCanton !== '' && SlcParroquia !== '' && SlcZona !== ''){
+    if(SlcCanton !== '' && SlcParroquias !== '' && SlcRecintos !== ''){
       axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/add_coord',{
         cedula: InpCedula,
         nombres: InpNombres,
         apellidos: InpApellidos,
         celular: InpCelular,
-        correo: InpCorreo,
         cod_canton: SlcCanton,
-        cod_parroquia: SlcParroquia,
-        nombre_zona: SlcZona
+        cod_parroquia: SlcParroquias,
+        cod_recinto: SlcRecintos
       }).then((result)=>{
         if(result.data.icon === 'success'){
           CDlgCoordinador()
@@ -310,15 +309,16 @@ const Usuarios = () => {
   //Registro de usuarios veedores
   const RegistrarVeedor=(e)=>{
     e.preventDefault()
-    if(SlcCanton !== '' && SlcParroquia !== '' && SlcZona !== '' && SlcJuntas.length >0){
+    if(SlcCanton !== '' && SlcParroquias !== '' && SlcRecintos !== '' && SlcJuntas.length >0){
+      console.log(SlcJuntas)
       axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/add_veedor',{
         cedula: InpCedula,
         nombres: InpNombres,
         apellidos: InpApellidos,
         celular: InpCelular,
-        correo: InpCorreo,
         cod_canton: SlcCanton,
-        cod_parroquia: SlcParroquia,
+        cod_parroquia: SlcParroquias,
+        cod_recinto: SlcRecintos,
         recintos: SlcJuntas
       }).then((result)=>{
         if(result.data.icon === 'success'){
@@ -361,6 +361,46 @@ const Usuarios = () => {
   //Metodo para cargar el dlg de recintos
   const ZonasRecintos =(e)=>{
     let dato=[e]
+    if(dato[0].id_rol == 2 ){
+      setDlgParroquias(true)
+      setParroquias(dato[0].recintos)
+    }else if(dato[0].id_rol == 3){
+      setDlgViewRecintos(true)
+      setRecintos(dato[0].recintos)
+    }else if(dato[0].id_rol == 4){
+      setDlgViewRecintos(true)
+      setRecintos(dato[0].recintos)
+    }
+    
+  }
+
+  const SelectRecinto=(()=>{
+    if(SlcRecintos !== ''){
+      let filtro= DrpRecinto.filter((e)=>e.codigo_recinto == SlcRecintos)
+      let array=[]
+      for(let i=0; i<filtro.length; i++){
+        for(let j=1; j<=filtro[i].juntas_fem; j++){
+          array.push({
+            cod_recinto: filtro[i].codigo_recinto,
+            num_junta: j+'F',
+            ejecutado: 0
+          })
+        }
+        for(let j=1; j<=filtro[i].juntas_mas; j++){
+          array.push({
+            cod_recinto: filtro[i].codigo_recinto,
+            num_junta: j+'M',
+            ejecutado: 0
+          })
+        }
+      }
+
+      setDrpJuntas(array)
+    }
+  })
+
+  const RecintoSuperv=(e)=>{
+    let dato=[e]
     setRecintos(dato[0].recintos)
     setDlgViewRecintos(true)
   }
@@ -400,44 +440,23 @@ const Usuarios = () => {
     )
   }
 
+  const Acciones2=(rowData)=>{
+    return(
+      <div>
+        <Button icon="pi pi-eye" className="p-button-rounded p-button-success mr-2"  onClick={() => RecintoSuperv(rowData)} />
+      </div>
+    )
+  }
+
+
   const CDlgViewRecintos=(()=>{
     setDlgViewRecintos(false)
     setRecintos([])
   })
 
-  const SelectZona=(()=>{
-    if(SlcZona !== ''){
-      const filtro= DrpZona.filter((e)=>e.nombre_zona === SlcZona)
-
-      let array=[]
-
-      for(let i=1; i<=filtro[0].recintos[0].juntas_fem; i++){
-        array.push({
-          nombre_zona: SlcZona,
-          nombre_recinto: filtro[0].recintos[0].nombre_recinto,
-          direccion: filtro[0].recintos[0].direccion,
-          cod_recinto: filtro[0].recintos[0].codigo_recinto,
-          num_junta: i+'F',
-          ejecutado: 0
-        })
-      }
-
-      for(let i=1; i<=filtro[0].recintos[0].juntas_mas; i++){
-        array.push({
-          nombre_zona: SlcZona,
-          nombre_recinto: filtro[0].recintos[0].nombre_recinto,
-          direccion: filtro[0].recintos[0].direccion,
-          cod_recinto: filtro[0].recintos[0].codigo_recinto,
-          num_junta: i+'M',
-          ejecutado: 0
-        })
-      }
-
-      array.sort((a, b) => a.nombre_recinto.localeCompare(b.nombre_recinto));
-
-      setDrpJuntas(array)
-
-    }
+  const CDlgParroquias=(()=>{
+    setDlgParroquias(false)
+    setParroquias([])
   })
 
   return (
@@ -448,9 +467,7 @@ const Usuarios = () => {
         <Column field='cedula' header='Cédula' />
         <Column field='nombre' header='Nombre' />
         <Column field='celular' header='Celular' />
-        <Column field='correo' header='Correo' />
         <Column field='canton' header='Cantón' />
-        <Column field='parroquia' header='Parroquia' />
         <Column body={Acciones} align='center' exportable={false} style={{minWidth: '8rem' }} />
       </DataTable>
       {/* Dialogo para elegir el tipo de usuario a ingresar */}
@@ -458,17 +475,6 @@ const Usuarios = () => {
         <div className={styles.registros}>
           <Dropdown options={arrayUser} optionLabel='usuario' optionValue='usuario' value={SlcTUsuario} onChange={(e)=>{setSlcTUsuario(e.target.value)}} placeholder='Tipo de Usuario' onSelect={SelectTUsuario} />
         </div>
-      </Dialog>
-      {/* Dialogo para registro de usuarios individualmente */}
-      <Dialog visible={DlgRegisterI} onHide={CDlgRegister} style={{width:'30%'}} 
-      header='Registro de usuarios'>
-        <form className={styles.registros}>
-          <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} />
-          <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} />
-          <InputText type='text' placeholder='Apellidos' value={InpApellidos} onChange={(e)=>{setInpApellidos(e.target.value)}} />
-          <Dropdown options={DrpCanton} optionLabel='nombre_canton' optionValue='nombre_canton' value={SlcCanton} onChange={(e)=>{setSlcCanton(e.target.value)}} placeholder='Canton' />
-          
-        </form>
       </Dialog>
       {/* Dialogo para registrar los usuarios Administradores del sistema */}
       <Dialog visible={DlgRegisterAdm} onHide={CDlgRegisterAdm} header='Registrando un Administrador del Sistema' style={{width:'30%'}}>
@@ -485,9 +491,8 @@ const Usuarios = () => {
           <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
           <InputText type='text' placeholder='Apellidos' value={InpApellidos} onChange={(e)=>{setInpApellidos(e.target.value)}} required />
           <InputText type='text' placeholder='Celular' value={InpCelular} onChange={(e)=>{setInpCelular(e.target.value)}} required />
-          <InputText type='email' placeholder='Correo' value={InpCorreo} onChange={(e)=>{setInpCorreo(e.target.value)}} required />
           <Dropdown options={DrpCanton} optionLabel='nombre_canton' optionValue='codigo_canton' value={SlcCanton} onChange={(e)=>{setSlcCanton(e.target.value)}} placeholder='Canton' onSelect={SelectCanton} className={styles.drpdown} />
-          <Dropdown options={DrpParroquia} optionLabel='nombre_parroquia' optionValue='codigo_parroquia' value={SlcParroquia} onChange={(e)=>{setSlcParroquia(e.target.value)}} placeholder='Parroquia'  className={styles.drpdown} />
+          <MultiSelect options={DrpParroquia} optionLabel='nombre_parroquia' placeholder='Parroquias' value={SlcParroquia} onChange={(e)=>{setSlcParroquia(e.value)}} className={styles.drpdown}  />
           <Button label='Registrar' />
         </form>
       </Dialog>
@@ -498,12 +503,32 @@ const Usuarios = () => {
           <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
           <InputText type='text' placeholder='Apellidos' value={InpApellidos} onChange={(e)=>{setInpApellidos(e.target.value)}} required />
           <InputText type='text' placeholder='Celular' value={InpCelular} onChange={(e)=>{setInpCelular(e.target.value)}} required />
-          <InputText type='email' placeholder='Correo' value={InpCorreo} onChange={(e)=>{setInpCorreo(e.target.value)}} required />
           <Dropdown options={DrpCanton} optionLabel='nombre_canton' optionValue='codigo_canton' value={SlcCanton} onChange={(e)=>{setSlcCanton(e.target.value)}} placeholder='Canton' onSelect={SelectCanton} className={styles.drpdown} />
-          <Dropdown options={DrpParroquia} optionLabel='nombre_parroquia' optionValue='codigo_parroquia' value={SlcParroquia} onChange={(e)=>{setSlcParroquia(e.target.value)}} placeholder='Parroquia' onSelect={SelectParroquia}  className={styles.drpdown} />
-          <Dropdown options={DrpZona} optionLabel='nombre_zona' optionValue='nombre_zona' value={SlcZona} onChange={(e)=>{setSlcZona(e.target.value)}} placeholder='Zona'  className={styles.drpdown} />
+          <Dropdown options={DrpParroquia} optionLabel='nombre_parroquia' optionValue='codigo_parroquia' value={SlcParroquias} onChange={(e)=>{setSlcParroquias(e.target.value)}} placeholder='Parroquia' onSelect={SelectParroquia}  className={styles.drpdown} />
+          <Dropdown options={DrpRecinto} optionLabel='nombre_recinto' optionValue='codigo_recinto'  placeholder='Recinto' value={SlcRecintos} onChange={(e)=>{setSlcRecintos(e.target.value)}}  className={styles.drpdown} />
           <Button label='Registrar' />
         </form>
+      </Dialog>
+      {/* Dialogo para registrar los usuarios veedores */}
+      <Dialog visible={DlgVeedor} onHide={CDlgVeedor} header='Registrando un usuario Veedor' style={{width:'30%'}} >
+        <form className={styles.registros}  onSubmit={RegistrarVeedor} >
+          <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} required />
+          <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
+          <InputText type='text' placeholder='Apellidos' value={InpApellidos} onChange={(e)=>{setInpApellidos(e.target.value)}} required />
+          <InputText type='text' placeholder='Celular' value={InpCelular} onChange={(e)=>{setInpCelular(e.target.value)}} required />
+          <Dropdown options={DrpCanton} optionLabel='nombre_canton' optionValue='codigo_canton' value={SlcCanton} onChange={(e)=>{setSlcCanton(e.target.value)}} placeholder='Canton' onSelect={SelectCanton} className={styles.drpdown} />
+          <Dropdown options={DrpParroquia} optionLabel='nombre_parroquia' optionValue='codigo_parroquia' value={SlcParroquias} onChange={(e)=>{setSlcParroquias(e.target.value)}} placeholder='Parroquia' onSelect={SelectParroquia}  className={styles.drpdown} />
+          <Dropdown options={DrpRecinto} optionLabel='nombre_recinto' optionValue='codigo_recinto' value={SlcRecintos} onChange={(e)=>{setSlcRecintos(e.target.value)}} placeholder='Recinto' onSelect={SelectRecinto}   className={styles.drpdown} />
+          <MultiSelect options={DrpJuntas} optionLabel='num_junta' placeholder='Juntas' value={SlcJuntas} onChange={(e)=>{setSlcJuntas(e.value)}} className={styles.drpdown} />
+          <Button label='Registrar' />
+        </form>
+      </Dialog>
+      {/* Dialogo para mostrar las parroquias asignadas a los usuarios supervisor */}
+      <Dialog visible={DlgParroquias} onHide={CDlgParroquias} header='Parroquias asignadas' style={{width: '30%'}} >
+        <DataTable value={Parroquias}>
+          <Column field='nombre_parroquia' header='Parroquias' />
+          <Column body={Acciones2} header='Recintos' align='center' exportable={false} style={{minWidth: '8rem' }} />
+        </DataTable>
       </Dialog>
       {/* Dialogo para mostrar los recintos asignados a cada persona */}
       <Dialog visible={DlgViewRecintos} onHide={CDlgViewRecintos} style={{width: '50%'}} >
@@ -516,21 +541,7 @@ const Usuarios = () => {
           <Column field='num_junta' header='Junta' />
         </DataTable>
       </Dialog>
-      {/* Dialogo para registrar los usuarios veedores */}
-      <Dialog visible={DlgVeedor} onHide={CDlgVeedor} header='Registrando un usuario Veedor' style={{width:'30%'}} >
-        <form className={styles.registros}  onSubmit={RegistrarVeedor} >
-          <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} required />
-          <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
-          <InputText type='text' placeholder='Apellidos' value={InpApellidos} onChange={(e)=>{setInpApellidos(e.target.value)}} required />
-          <InputText type='text' placeholder='Celular' value={InpCelular} onChange={(e)=>{setInpCelular(e.target.value)}} required />
-          <InputText type='email' placeholder='Correo' value={InpCorreo} onChange={(e)=>{setInpCorreo(e.target.value)}} required />
-          <Dropdown options={DrpCanton} optionLabel='nombre_canton' optionValue='codigo_canton' value={SlcCanton} onChange={(e)=>{setSlcCanton(e.target.value)}} placeholder='Canton' onSelect={SelectCanton} className={styles.drpdown} />
-          <Dropdown options={DrpParroquia} optionLabel='nombre_parroquia' optionValue='codigo_parroquia' value={SlcParroquia} onChange={(e)=>{setSlcParroquia(e.target.value)}} placeholder='Parroquia' onSelect={SelectParroquia}  className={styles.drpdown} />
-          <Dropdown options={DrpZona} optionLabel='nombre_zona' optionValue='nombre_zona' value={SlcZona} onChange={(e)=>{setSlcZona(e.target.value)}} placeholder='Zona'  className={styles.drpdown} onSelect={SelectZona} />
-          <MultiSelect options={DrpJuntas} optionLabel='num_junta' placeholder='Juntas' value={SlcJuntas} onChange={(e)=>{setSlcJuntas(e.value)}} className={styles.drpdown} />
-          <Button label='Registrar' />
-        </form>
-      </Dialog>
+      
     </Sidebar>
   )
 }

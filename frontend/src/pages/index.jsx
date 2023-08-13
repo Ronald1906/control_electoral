@@ -19,7 +19,6 @@ const Index = () => {
       user: InpUser,
       pass: InpPass
     }).then((result)=>{
-      console.log(result.data)
       if(result.data.icon === 'warning'){
         Swal.fire({
           title:result.data.title,

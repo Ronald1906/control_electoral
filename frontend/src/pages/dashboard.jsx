@@ -2,11 +2,27 @@ import Sidebar from '@/components/Sidebar'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import BarListas from '@/components/BarListas';
+import { useRouter } from 'next/router';
 
 
 const Dashboard = () => {
 
+  const router= useRouter()
+
   const [Listas, setListas] = useState([]);
+
+
+  useEffect(()=>{
+    axios.get(process.env.NEXT_PUBLIC_BACKEND+'usuarios/login',{
+      headers:{
+        token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app')
+      }
+    }).then((result)=>{
+      if(result.data.token.data.id_rol !== 1){
+        router.push('/')
+      }
+    })
+  })
 
   useEffect(()=>{
     const consulta=(()=>{

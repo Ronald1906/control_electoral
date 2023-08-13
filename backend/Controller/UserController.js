@@ -14,30 +14,50 @@ router.get('/', async(req,res)=>{
         //Excluimos los usuarios administradores
         const filtro= consulta.rows.filter((e)=>e.id_rol != 1)
 
-        //array a mostrar
+        //array de personas
         let array=[]
 
+        //Recorremos el filtro
         for(let i=0; i<filtro.length; i++){
-            
-            const consulta2= await conexion.query("SELECT * FROM tbl_personas WHERE cedula = '"+ filtro[i].id_persona+"'")
-            
-            const consulta3= await conexion.query("SELECT * FROM tbl_recintos WHERE codigo_canton = '"+ filtro[i].cod_canton+"'")
+            const consulta2= await conexion.query("SELECT * FROM tbl_personas WHERE cedula = '"+filtro[i].id_persona+"'")
+            const consulta4= await conexion.query("SELECT * from tbl_rol WHERE _id = '"+ filtro[i].id_rol+"'")
+            //Consultamos el canton
+            const consulta3= await conexion.query("SELECT * FROM tbl_recintos WHERE codigo_canton = '"+filtro[i].cod_canton+"'")
 
-            const consulta4= await conexion.query("SELECT * FROM tbl_rol WHERE _id = '" + filtro[i].id_rol+"'")
-
-            const filtro2= consulta3.rows[0].parroquias.filter((e)=>e.codigo_parroquia == filtro[i].cod_parroquia)
-
-            array.push({
-                cedula: consulta2.rows[0].cedula,
-                nombre: consulta2.rows[0].nombres + ' '+ consulta2.rows[0].apellidos,
-                celular: consulta2.rows[0].celular,
-                correo: consulta2.rows[0].correo,
-                canton: consulta3.rows[0].nombre_canton,
-                parroquia: filtro2[0].nombre_parroquia,
-                recintos: filtro[i].recintos,
-                rol: consulta4.rows[0].nombre_rol
-            })
-
+            if(filtro[i].id_rol == 2){
+                array.push({
+                    cedula: consulta2.rows[0].cedula,
+                    nombre: consulta2.rows[0].nombres+' '+ consulta2.rows[0].apellidos,
+                    celular: consulta2.rows[0].celular,
+                    rol: consulta4.rows[0].nombre_rol,
+                    recintos: filtro[i].recintos,
+                    id_rol: filtro[i].id_rol,
+                    codigo_canton: filtro[i].cod_canton,
+                    canton: consulta3.rows[0].nombre_canton
+                })
+            }else if(filtro[i].id_rol == 3){
+                array.push({
+                    cedula: consulta2.rows[0].cedula,
+                    nombre: consulta2.rows[0].nombres+' '+ consulta2.rows[0].apellidos,
+                    celular: consulta2.rows[0].celular,
+                    rol: consulta4.rows[0].nombre_rol,
+                    recintos: filtro[i].recintos,
+                    id_rol: filtro[i].id_rol,
+                    codigo_canton: filtro[i].cod_canton,
+                    canton: consulta3.rows[0].nombre_canton
+                })
+            }else if(filtro[i].id_rol == 4){
+                array.push({
+                    cedula: consulta2.rows[0].cedula,
+                    nombre: consulta2.rows[0].nombres+' '+ consulta2.rows[0].apellidos,
+                    celular: consulta2.rows[0].celular,
+                    rol: consulta4.rows[0].nombre_rol,
+                    recintos: filtro[i].recintos,
+                    id_rol: filtro[i].id_rol,
+                    codigo_canton: filtro[i].cod_canton,
+                    canton: consulta3.rows[0].nombre_canton
+                })
+            }
         }
 
         res.send(array)
@@ -90,56 +110,58 @@ router.post('/add_superv', async(req,res)=>{
         const datos= req.body
 
         //Iniciamos ingresando la persona en la tabla persona
-        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular, correo) VALUES ($1, $2, $3, $4, $5)"
-        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular, datos.correo]
+        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular) VALUES ($1, $2, $3, $4)"
+        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular]
+        
 
         try {
             //Se procede a registrar a la persona
             await conexion.query(query,values)
 
-            //Se consulta los recintos
-            const consulta= await conexion.query('SELECT * FROM tbl_recintos')
-
-            const filtro= consulta.rows.filter((e)=>e.codigo_canton == datos.cod_canton)
-            
-            const filtro2= filtro[0].parroquias.filter((e)=>e.codigo_parroquia == datos.cod_parroquia)
-
-            let array_recintos=[]
-
-            //Se recorre los recintos para inicializar en 0 y mostrar todas las juntas masculinas como femeninas
-            for(let i=0; i<filtro2[0].zonas.length; i++){
-                for(let j=1; j<=filtro2[0].zonas[i].recintos[0].juntas_fem; j++){
-                    array_recintos.push({
-                        nombre_zona: filtro2[0].zonas[i].nombre_zona,
-                        nombre_recinto: filtro2[0].zonas[i].recintos[0].nombre_recinto,
-                        direccion: filtro2[0].zonas[i].recintos[0].direccion,
-                        cod_recinto: filtro2[0].zonas[i].recintos[0].codigo_recinto,
-                        num_junta: j+'F',
-                        ejecutado: 0
-                    })
+            //Se crea un array para almacenar todos los recintos
+            let array=[]
+            //Se recorren los datos para obtener la informacion de cada mesa por recinto
+            for(let i=0; i<datos.recintos.length; i++){
+                let recintos=[]
+                for(let j=0; j<datos.recintos[i].zonas.length; j++){
+                    for(let k=1; k<= datos.recintos[i].zonas[j].recintos[0].juntas_fem; k++){
+                        recintos.push({
+                            nombre_zona: datos.recintos[i].zonas[j].nombre_zona,
+                            nombre_recinto: datos.recintos[i].zonas[j].recintos[0].nombre_recinto,
+                            direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
+                            cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
+                            num_junta: k+'F',
+                            ejecutado: 0
+                        })
+                    }
+    
+                    for(let k=1; k<= datos.recintos[i].zonas[j].recintos[0].juntas_mas; k++){
+                        recintos.push({
+                            nombre_zona: datos.recintos[i].zonas[j].nombre_zona,
+                            nombre_recinto: datos.recintos[i].zonas[j].recintos[0].nombre_recinto,
+                            direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
+                            cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
+                            num_junta: k+'M',
+                            ejecutado: 0
+                        })
+                    }
+    
                 }
-                for(let j=1; j<=filtro2[0].zonas[i].recintos[0].juntas_mas; j++){
-                    array_recintos.push({
-                        nombre_zona: filtro2[0].zonas[i].nombre_zona,
-                        nombre_recinto: filtro2[0].zonas[i].recintos[0].nombre_recinto,
-                        direccion: filtro2[0].zonas[i].recintos[0].direccion,
-                        cod_recinto: filtro2[0].zonas[i].recintos[0].codigo_recinto,
-                        num_junta: j+'M',
-                        ejecutado: 0
-                    })
-                }
+    
+                array.push({
+                    codigo_parroquia: datos.recintos[i].codigo_parroquia,
+                    nombre_parroquia: datos.recintos[i].nombre_parroquia,
+                    recintos: recintos
+                })
             }
-
-            //Se ordena el array de recintos por el nombre del recinto
-            array_recintos.sort((a, b) => a.nombre_recinto.localeCompare(b.nombre_recinto));
 
             //Se encripta la contraseña
             const pass = await bcryptjs.hash(datos.cedula,8)
             
 
             //Se procede a realizar el ingreso del usuario
-            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, cod_parroquia, recintos) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-            const values2= [datos.cedula, pass, 2, datos.cedula, datos.cod_canton, datos.cod_parroquia, array_recintos]
+            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, recintos) VALUES ($1, $2, $3, $4, $5, $6)"
+            const values2= [datos.cedula, pass, 2, datos.cedula, datos.cod_canton, array]
 
             try {
                 await conexion.query(query2, values2).then((resp)=>{
@@ -180,8 +202,8 @@ router.post('/add_coord', async(req,res)=>{
         const datos= req.body
 
         //Iniciamos ingresando la persona en la tabla persona
-        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular, correo) VALUES ($1, $2, $3, $4, $5)"
-        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular, datos.correo]
+        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular ) VALUES ($1, $2, $3, $4)"
+        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular]
         
         try {
 
@@ -189,47 +211,46 @@ router.post('/add_coord', async(req,res)=>{
             await conexion.query(query,values)
 
             //Se consulta los recintos
-            const consulta= await conexion.query('SELECT * FROM tbl_recintos')
+            const consulta= await conexion.query("SELECT * FROM tbl_recintos WHERE codigo_canton = '"+ datos.cod_canton +"'")
+
+            let filtro= consulta.rows[0].parroquias.filter((e)=>e.codigo_parroquia == datos.cod_parroquia)
+
+            let array=[]
             
-            const filtro= consulta.rows.filter((e)=>e.codigo_canton == datos.cod_canton)
-                        
-            const filtro2= filtro[0].parroquias.filter((e)=>e.codigo_parroquia == datos.cod_parroquia)
-
-            const filtro3= filtro2[0].zonas.filter((e)=>e.nombre_zona == datos.nombre_zona)
-
-            let array_recintos=[]
-
-            for(let i=1; i<filtro3[0].recintos[0].juntas_fem; i++){
-                array_recintos.push({
-                    nombre_zona: datos.nombre_zona,
-                    nombre_recinto: filtro3[0].recintos[0].nombre_recinto,
-                    direccion: filtro3[0].recintos[0].direccion,
-                    cod_recinto: filtro3[0].recintos[0].codigo_recinto,
-                    num_junta: i+'F',
-                    ejecutado: 0
-                })
-            }
-
-            for(let i=1; i<filtro3[0].recintos[0].juntas_mas; i++){
-                array_recintos.push({
-                    nombre_zona: datos.nombre_zona,
-                    nombre_recinto: filtro3[0].recintos[0].nombre_recinto,
-                    direccion: filtro3[0].recintos[0].direccion,
-                    cod_recinto: filtro3[0].recintos[0].codigo_recinto,
-                    num_junta: i+'M',
-                    ejecutado: 0
-                })
-            }
-
-            //Se ordena el array de recintos por el nombre del recinto
-            array_recintos.sort((a, b) => a.nombre_recinto.localeCompare(b.nombre_recinto));
+            for(let i=0; i<filtro[0].zonas.length; i++){
+                let filtro2= filtro[0].zonas[i].recintos.filter((e)=>e.codigo_recinto == datos.cod_recinto)
+                if(filtro2.length>0){
+                    for(let j=0; j<filtro2.length; j++){
+                        for(let k=1; k<=filtro2[j].juntas_fem; k++){
+                            array.push({
+                                nombre_zona: filtro[0].zonas[i].nombre_zona,
+                                nombre_recinto: filtro2[j].nombre_recinto,
+                                direccion: filtro2[j].direccion,
+                                cod_recinto: filtro2[j].codigo_recinto,
+                                num_junta: k+'F',
+                                ejecutado: 0
+                            })
+                        }
+                        for(let k=1; k<=filtro2[j].juntas_mas; k++){
+                            array.push({
+                                nombre_zona: filtro[0].zonas[i].nombre_zona,
+                                nombre_recinto: filtro2[j].nombre_recinto,
+                                direccion: filtro2[j].direccion,
+                                cod_recinto: filtro2[j].codigo_recinto,
+                                num_junta: k+'M',
+                                ejecutado: 0
+                            })
+                        }
+                    }
+                }
+            }            
 
             //Se encripta la contraseña
             const pass = await bcryptjs.hash(datos.cedula,8)
 
             //Se procede a realizar el ingreso del usuario
-            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, cod_parroquia, recintos) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-            const values2= [datos.cedula, pass, 3, datos.cedula, datos.cod_canton, datos.cod_parroquia, array_recintos]
+            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, recintos) VALUES ($1, $2, $3, $4, $5, $6)"
+            const values2= [datos.cedula, pass, 3, datos.cedula, datos.cod_canton, array]
 
             try {
                 await conexion.query(query2, values2).then((resp)=>{
@@ -255,7 +276,7 @@ router.post('/add_coord', async(req,res)=>{
             res.send({
                 title: '¡Error!',
                 icon: 'warning',
-                text: 'El usuario que esta intentando ingresar ya existe: '
+                text: 'El usuario que esta intentando ingresar ya existe: '+ error
             })
         }
 
@@ -270,8 +291,8 @@ router.post('/add_veedor', async(req,res)=>{
         const datos= req.body
 
         //Iniciamos ingresando la persona en la tabla persona
-        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular, correo) VALUES ($1, $2, $3, $4, $5)"
-        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular, datos.correo]
+        const query= "INSERT INTO tbl_personas (cedula, nombres, apellidos, celular) VALUES ($1, $2, $3, $4)"
+        const values= [datos.cedula, datos.nombres, datos.apellidos, datos.celular]
 
         try {
             //Se procede a registrar a la persona
@@ -280,11 +301,56 @@ router.post('/add_veedor', async(req,res)=>{
             //Se encripta la contraseña
             const pass = await bcryptjs.hash(datos.cedula,8)
 
+            //Se procede a conseguuir los recintos asignados
+
+            const consulta= await conexion.query("SELECT * FROM tbl_recintos WHERE codigo_canton = '"+ datos.cod_canton +"'")
+
+            let filtro= consulta.rows[0].parroquias.filter((e)=>e.codigo_parroquia == datos.cod_parroquia)
+            
+            let array=[]
+            for(let i=0; i<filtro.length; i++){
+                for(let j=0; j<filtro[i].zonas.length; j++){
+                    for(let k=0;k<filtro[i].zonas[j].recintos.length; k++){
+                        for(l=1; l<filtro[i].zonas[j].recintos[k].juntas_fem; l++){
+                            array.push({
+                                nombre_zona: filtro[i].zonas[j].nombre_zona,
+                                nombre_recinto: filtro[i].zonas[j].recintos[k].nombre_recinto,
+                                direccion: filtro[i].zonas[j].recintos[k].direccion,
+                                cod_recinto: filtro[i].zonas[j].recintos[k].codigo_recinto,
+                                num_junta: l+'F',
+                                ejecutado:0
+                            })
+                        }
+                        for(l=1; l<filtro[i].zonas[j].recintos[k].juntas_mas; l++){
+                            array.push({
+                                nombre_zona: filtro[i].zonas[j].nombre_zona,
+                                nombre_recinto: filtro[i].zonas[j].recintos[k].nombre_recinto,
+                                direccion: filtro[i].zonas[j].recintos[k].direccion,
+                                cod_recinto: filtro[i].zonas[j].recintos[k].codigo_recinto,
+                                num_junta: l+'M',
+                                ejecutado:0
+                            })
+                        }
+                    }
+                }
+            }
+            
+            let array_recintos=[]
+
+            for(let i=0; i<datos.recintos.length; i++){
+                let filtro_r= array.filter((e)=>e.cod_recinto == datos.recintos[i].cod_recinto && e.num_junta == datos.recintos[i].num_junta)
+                if(filtro_r.length >0){
+                    array_recintos.push(filtro_r[0])
+                }
+            }
+
+
             //Se procede a realizar el ingreso del usuario
-            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, cod_parroquia, recintos) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-            const values2= [datos.cedula, pass, 4, datos.cedula, datos.cod_canton, datos.cod_parroquia, datos.recintos]
+            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, recintos) VALUES ($1, $2, $3, $4, $5, $6)"
+            const values2= [datos.cedula, pass, 4, datos.cedula, datos.cod_canton, array_recintos]
 
             try {
+
                 await conexion.query(query2, values2).then((resp)=>{
                     if(resp.rowCount>0){
                         res.send({
@@ -397,9 +463,43 @@ router.get('/login', verifyTokenMiddleware, async(req,res)=>{
 })
 
 //Ruta para visualizar los datos del usuarios
-router.post('/datos', verifyTokenMiddleware, async(req,res)=>{
+router.post('/coordinadores', verifyTokenMiddleware, async(req,res)=>{
     try {
+        const data = req.body
+
+        //Se consulta el usuario para obtener el codigo de la parroquia
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= '"+data.user+"'")
+
+        //Se consulta los usuarios coordinadores que tengan como codigo de parroquia el mismo codigo del usuario supervisor
+        const consulta2= await conexion.query("SELECT * FROM tbl_users WHERE id_rol = 3 AND cod_parroquia = '"+ consulta.rows[0].cod_parroquia+"'")
+
+        //Creamos un array para almacenar los usuarios
+        let array_usuarios=[]
+
+        //Recorremos los datos
+        for(let i=0; i<consulta2.rowCount; i++){
+            let consulta_user= await conexion.query("SELECT * FROM tbl_personas WHERE cedula = '"+ consulta2.rows[i].id_persona+"'")
+            let array_nombre_zona=[]
+
+            for(let j=0; j<consulta2.rows[i].recintos.length; j++){
+                array_nombre_zona.filter((e)=>e == consulta2.rows[i].recintos[j].nombre_zona )
+                if(array_nombre_zona.length == 0){
+                    array_nombre_zona.push(consulta2.rows[i].recintos[j].nombre_zona)
+                }
+            }
+
+            if(array_nombre_zona.length >0 && array_nombre_zona.length<2){
+                array_usuarios.push({
+                    cedula: consulta_user.rows[0].cedula,
+                    nombre: consulta_user.rows[0].nombres +' '+ consulta_user.rows[0].apellidos,
+                    nombre_zona: array_nombre_zona[0]
+                })
+            }
+        }
+
+        res.send(array_usuarios)
         
+
     } catch (error) {
         console.log('Error en UserController en el metodo get /datos: '+error)
     }

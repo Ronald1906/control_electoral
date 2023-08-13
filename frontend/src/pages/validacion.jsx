@@ -12,13 +12,12 @@ const Validacion = () => {
         token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app')
       }
     }).then((result)=>{
-      
       //Si el rol es el de administrador
       if(result.data.token.data.id_rol === 1){
         router.push('/dashboard')
         //Si el rol es de supervisor
       }else if(result.data.token.data.id_rol === 2){
-        router.push('/dashboard')
+        router.push('/usuarios')
         //Si el rol es de coordinador
       }else if(result.data.token.data.id_rol === 3){
         router.push('/dashboard')
