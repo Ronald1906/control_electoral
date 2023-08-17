@@ -25,7 +25,6 @@ const Usuarios = () => {
   const [InpApellidos, setInpApellidos]= useState('')
   const [DrpCanton, setDrpCanton]= useState([])
   const [DrpParroquia, setDrpParroquia]= useState([])
-  const [DrpZona, setDrpZona]= useState([])
   const [DrpJuntas, setDrpJuntas]= useState([])
   const [DrpRecinto, setDrpRecinto]= useState([])
   const [SlcCanton, setSlcCanton]= useState('')
@@ -35,7 +34,6 @@ const Usuarios = () => {
   const [InpCelular, setInpCelular]= useState('')
   const [SlcParroquia, setSlcParroquia]= useState([])
   const [SlcParroquias, setSlcParroquias]= useState('')
-  const [SlcZona, setSlcZona]= useState('')
   const [SlcJuntas, setSlcJuntas] = useState([]);
   const [Parroquias, setParroquias]= useState([])
   const [Recintos, setRecintos]= useState([])
@@ -53,7 +51,6 @@ const Usuarios = () => {
   const consulta1=(()=>{
     axios.get(process.env.NEXT_PUBLIC_BACKEND+'recintos/recintos').then((result)=>{
       setDrpCanton(result.data)
-      console.log(result.data)
     })
   })
 
@@ -185,6 +182,8 @@ const Usuarios = () => {
     setDlgVeedor(false)
     setSlcTUsuario('')
     setDlgSlcUser(true)
+    setDrpJuntas([])
+    setSlcJuntas([])    
   })
 
   //Para filtrar las parroquias acorde al canton seleccionado
@@ -310,7 +309,6 @@ const Usuarios = () => {
   const RegistrarVeedor=(e)=>{
     e.preventDefault()
     if(SlcCanton !== '' && SlcParroquias !== '' && SlcRecintos !== '' && SlcJuntas.length >0){
-      console.log(SlcJuntas)
       axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/add_veedor',{
         cedula: InpCedula,
         nombres: InpNombres,
@@ -471,13 +469,13 @@ const Usuarios = () => {
         <Column body={Acciones} align='center' exportable={false} style={{minWidth: '8rem' }} />
       </DataTable>
       {/* Dialogo para elegir el tipo de usuario a ingresar */}
-      <Dialog visible={DlgSlcUser} header='Tipo de Usuario a registrar' onHide={CDlgSlcUser} style={{width:'30%'}} >
+      <Dialog visible={DlgSlcUser} header='Tipo de Usuario a registrar' onHide={CDlgSlcUser} style={{width:'auto'}} >
         <div className={styles.registros}>
           <Dropdown options={arrayUser} optionLabel='usuario' optionValue='usuario' value={SlcTUsuario} onChange={(e)=>{setSlcTUsuario(e.target.value)}} placeholder='Tipo de Usuario' onSelect={SelectTUsuario} />
         </div>
       </Dialog>
       {/* Dialogo para registrar los usuarios Administradores del sistema */}
-      <Dialog visible={DlgRegisterAdm} onHide={CDlgRegisterAdm} header='Registrando un Administrador del Sistema' style={{width:'30%'}}>
+      <Dialog visible={DlgRegisterAdm} onHide={CDlgRegisterAdm} header='Registrando un Administrador del Sistema' style={{width:'auto'}}>
         <form className={styles.registros} onSubmit={RegistrarAdmin}>
           <InputText type='text' placeholder='Usuario' value={InpUsuario} onChange={(e)=>{setInpUsuario(e.target.value)}} required />
           <InputText type='password' placeholder='Contraseña' value={InpPass} onChange={(e)=>{setInpPass(e.target.value)}} required />
@@ -485,7 +483,7 @@ const Usuarios = () => {
         </form>
       </Dialog>
       {/* Dialogo para registrar los usuarios Supervisores */}
-      <Dialog visible={DlgSupervisor} onHide={CDlgSupervisor} header='Registrando un usuario Supervisor' style={{width:'30%'}} >
+      <Dialog visible={DlgSupervisor} onHide={CDlgSupervisor} header='Registrando un usuario Supervisor' style={{width:'auto'}} >
         <form className={styles.registros} onSubmit={RegistrarSuperv}>
           <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} required />
           <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
@@ -497,7 +495,7 @@ const Usuarios = () => {
         </form>
       </Dialog>
       {/* Dialogo para registrar los usuarios coordinadores */}
-      <Dialog visible={DlgCoordinador} onHide={CDlgCoordinador} header='Registrando un usuario Coordinador' style={{width:'30%'}} >
+      <Dialog visible={DlgCoordinador} onHide={CDlgCoordinador} header='Registrando un usuario Coordinador' style={{width:'auto'}} >
         <form className={styles.registros} onSubmit={RegistrarCoord} >
           <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} required />
           <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
@@ -510,7 +508,7 @@ const Usuarios = () => {
         </form>
       </Dialog>
       {/* Dialogo para registrar los usuarios veedores */}
-      <Dialog visible={DlgVeedor} onHide={CDlgVeedor} header='Registrando un usuario Veedor' style={{width:'30%'}} >
+      <Dialog visible={DlgVeedor} onHide={CDlgVeedor} header='Registrando un usuario Veedor' style={{width:'auto'}} >
         <form className={styles.registros}  onSubmit={RegistrarVeedor} >
           <InputText type='text' placeholder='Cédula' value={InpCedula} onChange={(e)=>{setInpCedula(e.target.value)}} required />
           <InputText type='text' placeholder='Nombres' value={InpNombres} onChange={(e)=>{setInpNombres(e.target.value)}} required />
@@ -524,14 +522,14 @@ const Usuarios = () => {
         </form>
       </Dialog>
       {/* Dialogo para mostrar las parroquias asignadas a los usuarios supervisor */}
-      <Dialog visible={DlgParroquias} onHide={CDlgParroquias} header='Parroquias asignadas' style={{width: '30%'}} >
+      <Dialog visible={DlgParroquias} onHide={CDlgParroquias} header='Parroquias asignadas' style={{width: '100%'}} >
         <DataTable value={Parroquias}>
           <Column field='nombre_parroquia' header='Parroquias' />
           <Column body={Acciones2} header='Recintos' align='center' exportable={false} style={{minWidth: '8rem' }} />
         </DataTable>
       </Dialog>
       {/* Dialogo para mostrar los recintos asignados a cada persona */}
-      <Dialog visible={DlgViewRecintos} onHide={CDlgViewRecintos} style={{width: '50%'}} >
+      <Dialog visible={DlgViewRecintos} onHide={CDlgViewRecintos} style={{width: '100%'}} >
         <DataTable value={Recintos} paginator 
           stripedRows rows={5}>
           <Column field='nombre_zona' header='Zona' />

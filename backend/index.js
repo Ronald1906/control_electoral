@@ -11,6 +11,8 @@ app.use(express.json())
 //Seteando las variables de entorno
 dotenv.config({path: './Env/.env'})
 
+app.use('/recursos', express.static('public'))
+app.use('/recursos', express.static(__dirname+'/public'))
 
 //Seteando las cookies
 app.use(bodyParser.json({limit: "50mb", extended: true}));

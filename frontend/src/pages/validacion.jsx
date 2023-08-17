@@ -20,7 +20,7 @@ const Validacion = () => {
         router.push('/usuarios')
         //Si el rol es de coordinador
       }else if(result.data.token.data.id_rol === 3){
-        router.push('/dashboard')
+        router.push('/recintos_supervisor')
         //Si el rol es de veedor
       }else if(result.data.token.data.id_rol === 4){
         router.push('/inicio')

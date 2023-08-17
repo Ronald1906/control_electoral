@@ -221,7 +221,7 @@ const Recintos = () => {
         <Column field='juntas_fem' header='TOTAL JUNTAS F' align='center' />
         <Column field='juntas_mas' header='TOTAL JUNTAS M' align='center' />
       </DataTable>
-      <Dialog visible={DlgRegister} onHide={CDlgRegister} style={{width:'30%'}} 
+      <Dialog visible={DlgRegister} onHide={CDlgRegister} style={{width:'auto'}} 
       header='Registro de Recintos'>
         <form className={styles.registros} onSubmit={RegistrarDatos}> 
           <InputText type='file' className={styles.filesinp} onChange={(e)=>handleFile(e)} />

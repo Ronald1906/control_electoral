@@ -4,7 +4,28 @@ const conexion = require('../Database/database');
 const bcryptjs = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const verifyTokenMiddleware= require('../index')
+const multer = require('multer');
 
+
+// Configuración de multer para manejar la carga de archivos de la instalacion de la mesa
+const storage = multer.diskStorage({
+    destination: 'public/instalacion/', // Directorio donde se guardarán los archivos
+    filename: (req, file, cb) => {            
+      cb(null, file.originalname);
+    },
+});
+
+// Configuración de multer para manejar la carga de archivos de la instalacion de las novedades
+const storage2 = multer.diskStorage({
+    destination: 'public/novedades/', // Directorio donde se guardarán los archivos
+    filename: (req, file, cb) => {            
+      cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+const upload2= multer({ storage: storage2})
 
 //Ruta para obtener los usuarios
 router.get('/', async(req,res)=>{
@@ -66,7 +87,6 @@ router.get('/', async(req,res)=>{
         console.log('Error en UserController en el metodo get /: '+error)
     }
 })
-
 
 //Ruta para Agregar Usuarios Administradores
 router.post('/add_admin', async(req,res)=>{
@@ -131,7 +151,14 @@ router.post('/add_superv', async(req,res)=>{
                             direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
                             cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
                             num_junta: k+'F',
-                            ejecutado: 0
+                            instalacion: 0,
+                            img_instalacion: '',
+                            ejecutado: 0,
+                            img_ejecucion: '',
+                            fecha_instalacion: '',
+                            fecha_ejecucion: '',
+                            hora_instalacion: '',
+                            hora_ejecucion:''
                         })
                     }
     
@@ -142,7 +169,14 @@ router.post('/add_superv', async(req,res)=>{
                             direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
                             cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
                             num_junta: k+'M',
-                            ejecutado: 0
+                            instalacion: 0,
+                            img_instalacion: '',
+                            ejecutado: 0,
+                            img_ejecucion: '',
+                            fecha_instalacion: '',
+                            fecha_ejecucion: '',
+                            hora_instalacion: '',
+                            hora_ejecucion:''
                         })
                     }
     
@@ -228,7 +262,14 @@ router.post('/add_coord', async(req,res)=>{
                                 direccion: filtro2[j].direccion,
                                 cod_recinto: filtro2[j].codigo_recinto,
                                 num_junta: k+'F',
-                                ejecutado: 0
+                                ejecutado: 0,
+                                img_ejecucion: '',
+                                img_instalacion: '',
+                                instalacion: 0,
+                                fecha_instalacion: '',
+                                fecha_ejecucion: '',
+                                hora_instalacion: '',
+                                hora_ejecucion:''
                             })
                         }
                         for(let k=1; k<=filtro2[j].juntas_mas; k++){
@@ -238,7 +279,14 @@ router.post('/add_coord', async(req,res)=>{
                                 direccion: filtro2[j].direccion,
                                 cod_recinto: filtro2[j].codigo_recinto,
                                 num_junta: k+'M',
-                                ejecutado: 0
+                                ejecutado: 0,
+                                img_ejecucion: '',
+                                img_instalacion: '',
+                                instalacion: 0,
+                                fecha_instalacion: '',
+                                fecha_ejecucion: '',
+                                hora_instalacion: '',
+                                hora_ejecucion:''
                             })
                         }
                     }
@@ -318,7 +366,14 @@ router.post('/add_veedor', async(req,res)=>{
                                 direccion: filtro[i].zonas[j].recintos[k].direccion,
                                 cod_recinto: filtro[i].zonas[j].recintos[k].codigo_recinto,
                                 num_junta: l+'F',
-                                ejecutado:0
+                                ejecutado:0,
+                                instalacion: 0,
+                                img_ejecucion: '',
+                                img_instalacion: '',
+                                fecha_instalacion: '',
+                                fecha_ejecucion: '',
+                                hora_instalacion: '',
+                                hora_ejecucion:''
                             })
                         }
                         for(l=1; l<filtro[i].zonas[j].recintos[k].juntas_mas; l++){
@@ -328,7 +383,14 @@ router.post('/add_veedor', async(req,res)=>{
                                 direccion: filtro[i].zonas[j].recintos[k].direccion,
                                 cod_recinto: filtro[i].zonas[j].recintos[k].codigo_recinto,
                                 num_junta: l+'M',
-                                ejecutado:0
+                                ejecutado:0,
+                                instalacion: 0,
+                                img_ejecucion: '',
+                                img_instalacion: '',
+                                fecha_instalacion: '',
+                                fecha_ejecucion: '',
+                                hora_instalacion: '',
+                                hora_ejecucion:''
                             })
                         }
                     }
@@ -382,6 +444,7 @@ router.post('/add_veedor', async(req,res)=>{
     }
 })
 
+//Ruta para eliminar los usuarios
 router.post('/delete', async(req,res)=>{
     try {
         const datos= req.body
@@ -505,6 +568,182 @@ router.post('/coordinadores', verifyTokenMiddleware, async(req,res)=>{
     }
 })
 
+//Ruta para visualizar las juntas asignadas
+router.post('/juntas', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const datos= req.body
+
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users = '"+ datos.user+"'")
+
+        let array=[]
+
+        if(consulta.rows[0].id_rol == 4){
+            array= consulta.rows[0].recintos
+        }else if(consulta.rows[0].id_rol == 3){
+            array= consulta.rows[0].recintos
+        }else if(consulta.rows[0].id_rol == 2){
+            for(let i=0; i<consulta.rows[0].recintos.length; i++){
+                for(let j=0; j<consulta.rows[0].recintos[i].recintos.length; j++){
+                    array.push(consulta.rows[0].recintos[i].recintos[j])
+                }
+            }
+        }else if(consulta.rows[0].id_rol == 1){
+            for(let i=0; i<consulta.rows[0].recintos.length; i++){
+                for(let j=0; j<consulta.rows[0].recintos[i].recintos.length; j++){
+                    array.push(consulta.rows[0].recintos[i].recintos[j])
+                }
+            }
+        }
+
+        res.send(array)
+
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /juntas: '+ error)
+    }
+})
+
+//Ruta para almacenar la foto de la instalacion de mesa
+router.post('/instalacion_foto', verifyTokenMiddleware,upload.single('file'), async(req,res)=>{
+    try {
+        res.send({
+            title: '¡Registro Exitoso!',
+            icon: 'success',
+            text: 'Instalacion completada'
+        })
+        
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /instalacion_foto: '+ error)
+    }
+})
+
+//Ruta para ingresar los datos de la instalación 
+router.post('/instalacion', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const datos= req.body
+
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users!= '"+ datos.usuario+"'")
+
+        let filtro_usuarios= consulta.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+
+        let array=[]
+
+        for(let i=0; i<filtro_usuarios.length; i++){
+            const recintos= filtro_usuarios[i].recintos
+            const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+            if(filtro1.length >0){
+                if(filtro1[0].instalacion == 1){
+                    if(array.length == 0){
+                        array.push(filtro1[0])
+                    }
+                }
+            }
+        }
+        
+
+
+        if(array.length>0){
+            const consulta2= await conexion.query("SELECT * FROM tbl_users")
+            let filtro_user= consulta2.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+            
+            for(let i=0; i<filtro_user.length; i++){
+                const recintos= filtro_user[i].recintos
+                const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+                
+                if(filtro1.length >0){
+                    if(filtro1[0].instalacion == 0 ){
+                        filtro1[0].hora_instalacion= array[0].hora_instalacion
+                        filtro1[0].fecha_instalacion= array[0].fecha_instalacion
+                        filtro1[0].img_instalacion= array[0].img_instalacion
+                        filtro1[0].instalacion=array[0].instalacion
+
+                        await conexion.query("UPDATE tbl_users SET recintos = $1 WHERE users = $2",
+                        [recintos, filtro_user[i].users])
+                    }
+                }      
+
+            }
+            res.send({
+                registrado:true,
+                actualizado: true,
+                title: '¡Junta actualizada!',
+                icon: 'info',
+                text: 'La junta ya ha sido instalada antes, ya se actualizo su junta en base a la junta instalada de otro usuario'
+            })    
+        }else{
+            const consulta2= await conexion.query("SELECT * FROM tbl_users")
+            let filtro_user= consulta2.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+            for(let i=0; i<filtro_user.length; i++){                
+                const recintos= filtro_user[i].recintos
+                const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+                if(filtro1.length >0){
+                    if(filtro1[0].instalacion == 0 ){
+                        filtro1[0].hora_instalacion= datos.hora
+                        filtro1[0].fecha_instalacion= datos.fecha
+                        filtro1[0].img_instalacion= datos.imagen
+                        filtro1[0].instalacion=1
+            
+                        await conexion.query("UPDATE tbl_users SET recintos = $1 WHERE users = $2",
+                        [recintos, filtro_user[i].users])
+                    }
+                }
+            }
+
+            res.send({
+                registrado:true,
+                actualizado: false
+            })   
+            
+        }
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /instalacion: '+ error)
+    }
+})
+
+//Ruta para ingresar las novedades
+router.post('/novedades', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const datos = req.body
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= '"+ datos.usuario+"'")
+        
+        const query= "INSERT INTO tbl_novedades (users, cod_canton, img_novedad, fecha_novedad, hora_novedad) VALUES ($1, $2, $3, $4, $5)"
+        const values= [datos.usuario, consulta.rows[0].cod_canton, datos.imagen, datos.fecha, datos.hora]
+        
+        try {
+            //Se procede a registrar a la persona
+            await conexion.query(query,values)
+
+            res.send({
+                registro: true
+            })
+
+        } catch (error) {
+            res.send({
+                title: '¡Error!',
+                icon: 'error',
+                text: 'Ocurre un error de: '+ error+' comuniquese con el equipo informatico',
+                registro: false
+            })
+        }
+
+
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /novedades: '+ error)
+    }
+})
+
+//Ruta para ingresar las imagenes de las novedades
+router.post('/novedades_foto', verifyTokenMiddleware, upload2.single('file'), async(req,res)=>{
+    try {
+        res.send({
+            title: '¡Registro Exitoso!',
+            icon: 'success',
+            text: 'Novedad ingresada'
+        })
+        
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /novedades_foto: '+ error)
+    }
+})
 
 
 module.exports = router

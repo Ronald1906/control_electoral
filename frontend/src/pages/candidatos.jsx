@@ -118,7 +118,7 @@ const candidatos = () => {
         <Column field='candidato_3' header='CANDIDATO 3' align='center' />
         <Column field='candidato_4' header='CANDIDATO 4' align='center' />
       </DataTable>
-      <Dialog visible={DlgRegistrar} style={{width:'30%'}} onHide={CDlgRegistrar} header='Ingresar Candidatos'>
+      <Dialog visible={DlgRegistrar} style={{width:'auto'}} onHide={CDlgRegistrar} header='Ingresar Candidatos'>
         <form className={styles.registros} onSubmit={RegistrarDatos}>
           <InputText type='file' className={styles.filesinp} onChange={(e)=>handleFile(e)} />  
           <Button label='Registrar' />

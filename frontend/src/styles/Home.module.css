@@ -83,7 +83,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 300px;
 }
 
 .dlgnovedad .slcs{
@@ -92,6 +91,11 @@
 
 .dlgnovedad .txtarea{
   margin-bottom: 10px;
+}
+
+.dlgnovedad .texfile{
+  margin-bottom: 10px;
+  width: 100%;
 }
 
 
@@ -176,6 +180,11 @@
   width: calc(100% - 200px);
 }
 
+.contenedorveedor{
+  position: fixed;
+  width: 100%;
+}
+
 .contenedorpages{
   padding: 10px;
   overflow-y: auto;
@@ -216,4 +225,3 @@
 .drpdown{
   margin-bottom: 10px;
 }
-
