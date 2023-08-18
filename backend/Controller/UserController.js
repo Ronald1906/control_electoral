@@ -700,6 +700,9 @@ router.post('/instalacion', verifyTokenMiddleware, async(req,res)=>{
 
             res.send({
                 registrado:true,
+                title: '¡Registro Éxitoso!',
+                icon: 'success',
+                text: 'Junsta Instalada',
                 actualizado: false
             })   
             
@@ -862,6 +865,17 @@ router.post('/foto_votos', verifyTokenMiddleware, upload3.single('file'), async(
         })
     } catch (error) {
         console.log('Error en UserController en el metodo post /foto_votos: '+ error)
+    }
+})
+
+//Ruta para visualizar todas las juntas que estan en la tabla temporal
+router.get('/revision', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        await conexion.query("SELECT * FROM tbl_temporal WHERE valido = '"+ false+"'").then((result)=>{
+            res.send(result.rows)
+        })
+    } catch (error) {
+        console.log('Error en UserController en el metodo get /revision: '+ error)
     }
 })
 
