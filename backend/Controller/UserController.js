@@ -23,9 +23,19 @@ const storage2 = multer.diskStorage({
     },
 });
 
+// Configuración de multer para manejar la carga de archivos del registro de votos
+const storage3 = multer.diskStorage({
+    destination: 'public/votacion/', // Directorio donde se guardarán los archivos
+    filename: (req, file, cb) => {            
+      cb(null, file.originalname);
+    },
+});
+
 const upload = multer({ storage: storage });
 
 const upload2= multer({ storage: storage2})
+
+const upload3= multer({ storage: storage3})
 
 //Ruta para obtener los usuarios
 router.get('/', async(req,res)=>{
@@ -739,11 +749,120 @@ router.post('/novedades_foto', verifyTokenMiddleware, upload2.single('file'), as
             icon: 'success',
             text: 'Novedad ingresada'
         })
-        
     } catch (error) {
         console.log('Error en UserController en el metodo post /novedades_foto: '+ error)
     }
 })
 
+//Ruta para ingresar las votaciones a la tabla temporal
+router.post('/temp_votacion', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const datos= req.body
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users!= '"+ datos.usuario+"'")
 
-module.exports = router
+        let filtro_usuarios= consulta.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+
+        let array=[]
+
+        for(let i=0; i<filtro_usuarios.length; i++){
+            const recintos= filtro_usuarios[i].recintos
+            const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+            if(filtro1.length >0){
+                if(filtro1[0].ejecutado == 1){
+                    if(array.length == 0){
+                        array.push(filtro1[0])
+                    }
+                }
+            }
+        }
+
+        if(array.length>0){
+            const consulta2= await conexion.query("SELECT * FROM tbl_users")
+            let filtro_user= consulta2.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+            
+            for(let i=0; i<filtro_user.length; i++){
+                const recintos= filtro_user[i].recintos
+                const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+                
+                if(filtro1.length >0){
+                    if(filtro1[0].ejecutado == 0 ){
+                        filtro1[0].hora_ejecucion= array[0].hora_ejecucion
+                        filtro1[0].fecha_ejecucion= array[0].fecha_ejecucion
+                        filtro1[0].img_ejecucion= array[0].img_ejecucion
+                        filtro1[0].ejecutado=array[0].ejecutado
+
+                        await conexion.query("UPDATE tbl_users SET recintos = $1 WHERE users = $2",
+                        [recintos, filtro_user[i].users])
+                    }
+                }      
+            }  
+        }else{
+            const consulta2= await conexion.query("SELECT * FROM tbl_users")
+            let filtro_user= consulta2.rows.filter((e)=> e.id_rol != 1 && e.id_rol != 2)
+            for(let i=0; i<filtro_user.length; i++){                
+                const recintos= filtro_user[i].recintos
+                const filtro1= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+                if(filtro1.length >0){
+                    if(filtro1[0].ejecutado == 0 ){
+                        filtro1[0].hora_ejecucion= datos.hora
+                        filtro1[0].fecha_ejecucion=datos.fecha
+                        filtro1[0].img_ejecucion= datos.imagen
+                        filtro1[0].ejecutado=1
+
+                        await conexion.query("UPDATE tbl_users SET recintos = $1 WHERE users = $2",
+                        [recintos, filtro_user[i].users])
+                    }
+                }
+            }
+        }
+
+        const consulta3= await conexion.query("SELECT * FROM tbl_users WHERE users= '"+ datos.usuario+"'")
+
+        const recintos= consulta3.rows[0].recintos
+
+        const filtro_junta= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+
+        const consultatempo= await conexion.query("SELECT * FROM tbl_temporal WHERE cod_recinto = '"+filtro_junta[0].cod_recinto+"' AND direccion =  '"+ filtro_junta[0].direccion +"' AND img_ejecucion = '"+ filtro_junta[0].img_ejecucion+"' AND nombre_recinto = '"+ filtro_junta[0].nombre_recinto+ "' AND nombre_zona = '"+ filtro_junta[0].nombre_zona +"' AND num_junta = '"+filtro_junta[0].num_junta+"'" )
+
+        if(consultatempo.rowCount == 0){
+            //Iniciamos ingresando los datos en la tabla temporal
+            const query= "INSERT INTO tbl_temporal (cod_recinto, direccion, img_ejecucion, nombre_recinto, nombre_zona, num_junta, votos, valido) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+            const values= [filtro_junta[0].cod_recinto, filtro_junta[0].direccion, filtro_junta[0].img_ejecucion, filtro_junta[0].nombre_recinto, filtro_junta[0].nombre_zona, filtro_junta[0].num_junta, datos.votos, false]
+            await conexion.query(query,values).then((resp)=>{
+                if(resp.rowCount >0){
+                    res.send({
+                        nuevo: true,
+                        title: '¡Registro Éxitoso!',
+                        icon: 'success',
+                        text: '¡Votos registrados!'
+                    })
+                }
+            })
+        }else{
+            res.send({
+                nuevo: false,
+                title: '¡Registro Éxitoso!',
+                icon: 'success',
+                text: '¡Votos registrados!'
+            })
+        }
+        
+
+    } catch (error) {
+        console.log('Error en UserController en el metodo postv/temp_votacion: '+ error)
+    }
+})
+
+router.post('/foto_votos', verifyTokenMiddleware, upload3.single('file'), async(req,res)=>{
+    try {
+        res.send({
+            title: '¡Registro Exitoso!',
+            icon: 'success',
+            text: '¡Votos registrados!'
+        })
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /foto_votos: '+ error)
+    }
+})
+
+module.exports = router   

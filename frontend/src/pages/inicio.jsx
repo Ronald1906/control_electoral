@@ -26,24 +26,34 @@ const Inicio = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [InpNovedad, setInpNovedad]= useState('')
 
-
-  const consulta= (()=>{
-    axios.get(process.env.NEXT_PUBLIC_BACKEND+'candidatos/votacion').then((result)=>{
-      setListas(result.data)
-    })
-  })  
-
-  const consulta2=(usuario)=>{
-    axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/juntas',{
-      user: usuario
-    },{
-      headers:{
-        token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app')
-      }
-    }).then((resp)=>{
-      setJuntas(resp.data)
-    })
-  }
+  const consulta = async () => {
+    try {
+      const result = await axios.get(process.env.NEXT_PUBLIC_BACKEND + 'candidatos/votacion');
+      setListas(result.data);
+    } catch (error) {
+      console.error('Error en consulta:', error);
+      // Puedes mostrar un mensaje de error o tomar medidas adicionales aquí
+    }
+  };
+  
+  const consulta2 = async (usuario) => {
+    try {
+      const resp = await axios.post(
+        process.env.NEXT_PUBLIC_BACKEND + 'usuarios/juntas',
+        { user: usuario },
+        {
+          headers: {
+            token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app'),
+          },
+        }
+      );
+      setJuntas(resp.data);
+    } catch (error) {
+      console.error('Error en consulta2:', error);
+      // Puedes mostrar un mensaje de error o tomar medidas adicionales aquí
+    }
+  };
+  
 
   const CDlgNovedades=(()=>{
     setDlgNovedades(false)
@@ -61,7 +71,7 @@ const Inicio = () => {
       }).then((result)=>{
         if(result.data.auth == false){
           router.push('/')
-        }else{
+        }else if(result.data.auth == true){
           setUsuario(result.data.token.data.users)
           consulta2(result.data.token.data.users)
         }
@@ -232,7 +242,7 @@ const Inicio = () => {
   })
 
   const handleUpload3=(()=>{
-    setDlgIntalacion(false)
+    setDlgCaptureVotacion(false)
     if (!capturedImage) {
       Swal.fire({
         title:'¡Error!',
@@ -243,45 +253,43 @@ const Inicio = () => {
       const uniqueFileName = generateUniqueFileName(Usuario); // Genera un nombre único
       let token= localStorage.getItem('token_eleccion_2023_app')
 
-      axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/instalacion',{
+      axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/temp_votacion',{
         usuario: Usuario,
         imagen: uniqueFileName,
         fecha: new Date().toISOString().substring(0,10),
         hora: new Date().toLocaleTimeString(),
-        junta: JuntaInst
+        junta: JuntaInst,
+        votos: Listas
       },{
         headers:{
           token_eleccion_2023_app: token
         }
       }).then((result)=>{
-        if(result.data.registrado == true){
-          if(result.data.actualizado == false){
-            CDlgIntalacion()
-            const formData = new FormData();
-            const blob = dataURItoBlob(capturedImage); // Convierte la imagen capturada de base64 a Blob
-            formData.append('file', blob, uniqueFileName);
-      
-            axios.post(process.env.NEXT_PUBLIC_BACKEND + 'usuarios/instalacion_foto', formData,{
-              headers:{
-                token_eleccion_2023_app: token
-              }
-            }).then((results)=>{
-              consulta2(Usuario)
+        consulta2(Usuario)
+        if(result.data.nuevo == true){
+          const formData = new FormData();
+          const blob = dataURItoBlob(capturedImage); // Convierte la imagen capturada de base64 a Blob
+          formData.append('file', blob, uniqueFileName);
+        
+          axios.post(process.env.NEXT_PUBLIC_BACKEND + 'usuarios/foto_votos', formData,{
+            headers:{
+              token_eleccion_2023_app: token
+            }
+          }).then((results)=>{
+              CDlgCaptureVotacion()
               Swal.fire({
                 title: results.data.title,
                 icon: results.data.icon,
                 text: results.data.text
-              })
-            })
-          }else if(result.data.actualizado == true){
-            consulta2(Usuario)
-            CDlgIntalacion()
-            Swal.fire({
-              title: result.data.title,
-              icon: result.data.icon,
-              text: result.data.text
-            })
-          }
+             })
+          })
+        }else if(result.data.nuevo == false){
+          CDlgCaptureVotacion()
+          Swal.fire({
+            title: result.data.title,
+            icon: result.data.icon,
+            text: result.data.text
+         })
         }
       })
     }
@@ -418,7 +426,7 @@ const Inicio = () => {
   const CDlgCaptureVotacion=(()=>{
     setDlgCaptureVotacion(false)
     setCapturedImage(null)
-    setDlgVotacion(true)
+    CDlgVotacion()
   })
 
   return (
