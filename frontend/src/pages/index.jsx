@@ -42,7 +42,7 @@ const Index = () => {
         router.push('/validacion')
       }
     })
-  },[])
+  },[router])
 
   return (
     <div className={styles.loginpage}>

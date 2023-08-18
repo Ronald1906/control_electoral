@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import styles from '@/styles/Home.module.css'
 import Navbar from './Navbar'
 import axios from 'axios'
-import SideMenu from './SideMenu'
+import Sidemenu from './Sidemenu'
 import {FaUser, FaClipboardList, FaHome, FaThList} from 'react-icons/fa'
 import { useRouter } from 'next/router'
 
@@ -26,7 +26,7 @@ const Sidebar = ({children}) => {
       router.push('/')
     }
 
-  },[])
+  },[router])
 
   useEffect(()=>{
     axios.get(process.env.NEXT_PUBLIC_BACKEND+'usuarios/login',{
@@ -63,7 +63,7 @@ const Sidebar = ({children}) => {
         <div style={{borderBottom:'1px solid white', padding:'15px', textAlign:'center'}}>
           <h2>CONTROL ELECTORAL</h2>
         </div> 
-        <SideMenu valor={{menu:MenuArray}} />
+        <Sidemenu valor={{menu:MenuArray}} />
       </div>
       <div className={styles.contenedorsecun}>
         <Navbar/>

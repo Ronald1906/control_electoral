@@ -32,7 +32,7 @@ const Validacion = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [router]);
 
   return null; // Opcionalmente, puedes devolver algún indicador de carga
 };

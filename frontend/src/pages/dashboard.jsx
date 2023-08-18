@@ -22,7 +22,7 @@ const Dashboard = () => {
         router.push('/')
       }
     })
-  },[])
+  },[router])
 
   useEffect(()=>{
     const consulta=(()=>{

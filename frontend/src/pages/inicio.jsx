@@ -79,7 +79,7 @@ const Inicio = () => {
     }else{
       router.push('/')
     }
-  },[])
+  },[router])
 
   const HeaderTable=(()=>{
     return(
@@ -135,6 +135,7 @@ const Inicio = () => {
     if(dato.instalacion == 0){
       setJuntaInst(dato)
       setDlgIntalacion(true)
+      const stream = navigator.mediaDevices.getUserMedia({ video: true });
     }else if(dato.instalacion == 1){
       Swal.fire({
         title:'¡Error!',
@@ -428,6 +429,20 @@ const Inicio = () => {
     setCapturedImage(null)
     CDlgVotacion()
   })
+
+  useEffect(() => {
+    if (DlgIntalacion) {
+      console.log('Se ejecuto esta vaina')
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          webcamRef.current.srcObject = stream;
+        })
+        .catch((error) => {
+          console.error('Error al acceder a la cámara:', error);
+        });
+    }
+  }, [DlgIntalacion]);
+
 
   return (
     <div className={styles.contenedorglobal}>

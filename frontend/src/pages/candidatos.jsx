@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 
-const candidatos = () => {
+const Candidatos = () => {
   const [DlgRegistrar, setDlgRegistrar]= useState(false)
   const [FileDatos, setFileDatos]= useState([])
   const [Datos, setDatos]= useState([])
@@ -128,4 +128,4 @@ const candidatos = () => {
   )
 }
 
-export default candidatos
+export default Candidatos
