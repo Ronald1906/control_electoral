@@ -150,6 +150,7 @@ router.post('/add_superv', async(req,res)=>{
 
             //Se crea un array para almacenar todos los recintos
             let array=[]
+            let array_superv=[]
             //Se recorren los datos para obtener la informacion de cada mesa por recinto
             for(let i=0; i<datos.recintos.length; i++){
                 let recintos=[]
@@ -161,9 +162,24 @@ router.post('/add_superv', async(req,res)=>{
                             direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
                             cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
                             num_junta: k+'F',
-                            instalacion: 0,
+                            instalacion: false,
                             img_instalacion: '',
-                            ejecutado: 0,
+                            ejecutado: false,
+                            img_ejecucion: '',
+                            fecha_instalacion: '',
+                            fecha_ejecucion: '',
+                            hora_instalacion: '',
+                            hora_ejecucion:''
+                        })
+                        array_superv.push({
+                            nombre_zona: datos.recintos[i].zonas[j].nombre_zona,
+                            nombre_recinto: datos.recintos[i].zonas[j].recintos[0].nombre_recinto,
+                            direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
+                            cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
+                            num_junta: k+'F',
+                            instalacion: false,
+                            img_instalacion: '',
+                            ejecutado: false,
                             img_ejecucion: '',
                             fecha_instalacion: '',
                             fecha_ejecucion: '',
@@ -179,9 +195,24 @@ router.post('/add_superv', async(req,res)=>{
                             direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
                             cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
                             num_junta: k+'M',
-                            instalacion: 0,
+                            instalacion: false,
                             img_instalacion: '',
-                            ejecutado: 0,
+                            ejecutado: false,
+                            img_ejecucion: '',
+                            fecha_instalacion: '',
+                            fecha_ejecucion: '',
+                            hora_instalacion: '',
+                            hora_ejecucion:''
+                        })
+                        array_superv.push({
+                            nombre_zona: datos.recintos[i].zonas[j].nombre_zona,
+                            nombre_recinto: datos.recintos[i].zonas[j].recintos[0].nombre_recinto,
+                            direccion: datos.recintos[i].zonas[j].recintos[0].direccion,
+                            cod_recinto: datos.recintos[i].zonas[j].recintos[0].codigo_recinto,
+                            num_junta: k+'M',
+                            instalacion: false,
+                            img_instalacion: '',
+                            ejecutado: false,
                             img_ejecucion: '',
                             fecha_instalacion: '',
                             fecha_ejecucion: '',
@@ -192,6 +223,10 @@ router.post('/add_superv', async(req,res)=>{
     
                 }
     
+                
+                recintos.sort((a, b) => a.num_junta.localeCompare(b.num_junta)); 
+
+
                 array.push({
                     codigo_parroquia: datos.recintos[i].codigo_parroquia,
                     nombre_parroquia: datos.recintos[i].nombre_parroquia,
@@ -199,13 +234,14 @@ router.post('/add_superv', async(req,res)=>{
                 })
             }
 
+            array_superv.sort((a, b) => a.num_junta.localeCompare(b.num_junta)); 
             //Se encripta la contraseña
             const pass = await bcryptjs.hash(datos.cedula,8)
             
 
             //Se procede a realizar el ingreso del usuario
-            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, recintos) VALUES ($1, $2, $3, $4, $5, $6)"
-            const values2= [datos.cedula, pass, 2, datos.cedula, datos.cod_canton, array]
+            const query2= "INSERT INTO tbl_users (users, passw, id_rol, id_persona, cod_canton, recintos, recintos_surpv) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+            const values2= [datos.cedula, pass, 2, datos.cedula, datos.cod_canton, array, array_superv]
 
             try {
                 await conexion.query(query2, values2).then((resp)=>{
@@ -592,11 +628,7 @@ router.post('/juntas', verifyTokenMiddleware, async(req,res)=>{
         }else if(consulta.rows[0].id_rol == 3){
             array= consulta.rows[0].recintos
         }else if(consulta.rows[0].id_rol == 2){
-            for(let i=0; i<consulta.rows[0].recintos.length; i++){
-                for(let j=0; j<consulta.rows[0].recintos[i].recintos.length; j++){
-                    array.push(consulta.rows[0].recintos[i].recintos[j])
-                }
-            }
+            array= consulta.rows[0].recintos_surpv
         }else if(consulta.rows[0].id_rol == 1){
             for(let i=0; i<consulta.rows[0].recintos.length; i++){
                 for(let j=0; j<consulta.rows[0].recintos[i].recintos.length; j++){
@@ -878,5 +910,53 @@ router.get('/revision', verifyTokenMiddleware, async(req,res)=>{
         console.log('Error en UserController en el metodo get /revision: '+ error)
     }
 })
+
+//Ruta para actualizar las juntas del supervisor
+router.post('/registro_supervisor', verifyTokenMiddleware, async(req,res)=>{
+    try{
+        const datos= req.body
+
+        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= $1",[datos.usuario])
+
+        const recintos= consulta.rows[0].recintos_surpv
+
+        const filtro_junta= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+
+        filtro_junta[0].hora_ejecucion= datos.hora
+        filtro_junta[0].fecha_ejecucion= datos.fecha
+        filtro_junta[0].img_ejecucion= datos.img_name
+        filtro_junta[0].ejecutado=true
+
+        await conexion.query("UPDATE tbl_users SET recintos_surpv = $1 WHERE users = $2",
+        [recintos, datos.usuario])
+
+        await conexion.query("INSERT INTO tbl_votos (cod_recinto, direccion, img_ejecucion, nombre_recinto, nombre_zona, num_junta, votos) VALUES($1, $2, $3, $4, $5, $6, $7)",[
+            filtro_junta[0].cod_recinto, filtro_junta[0].direccion, filtro_junta[0].img_ejecucion, filtro_junta[0].nombre_recinto, filtro_junta[0].nombre_zona, filtro_junta[0].num_junta, datos.votos
+        ]).then((result)=>{
+            if(result.rowCount>0){
+                res.send({agregado: true})
+            }else{
+                console.log({agregado: false})
+            }
+        })
+
+
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /registro_supervisor: '+ error)
+    }
+})
+
+router.post('/super_imgvot',verifyTokenMiddleware, upload3.single('file'), async(req,res)=>{
+    try {
+        res.send({
+            title: '¡Registro Exitoso!',
+            icon: 'success',
+            text: '¡Votos registrados!'
+        })
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /foto_votos: '+ error)
+    }  
+})
+
 
 module.exports = router   

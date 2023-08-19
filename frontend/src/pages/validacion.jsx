@@ -19,7 +19,7 @@ const Validacion = () => {
         if (userRole === 1) {
           router.push('/dashboard');
         } else if (userRole === 2) {
-          router.push('/usuarios');
+          router.push('/sufragar');
         } else if (userRole === 3) {
           router.push('/recintos_supervisor');
         } else if (userRole === 4) {

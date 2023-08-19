@@ -4,13 +4,11 @@ import {DataTable} from 'primereact/datatable'
 import {Column} from 'primereact/column'
 import {Button} from 'primereact/button'
 import {Dialog} from 'primereact/dialog'
-import {InputTextarea} from 'primereact/inputtextarea'
 import Navbar from '@/components/Navbar'
 import axios from 'axios'
 import { useRouter } from 'next/router'  
 import Swal from 'sweetalert2'
 import { InputNumber } from 'primereact/inputnumber'
-import Webcam from 'react-webcam';
 
 const Inicio = () => {
   const router= useRouter()
@@ -99,7 +97,7 @@ const Inicio = () => {
     let dato= e
     let fecha= new Date().toLocaleTimeString().substring(0,2)
     let intfecha= parseInt(fecha)
-    if(intfecha <=17){
+    if(intfecha >=17){
       if(dato.ejecutado == 0){
         consulta()
         setJuntaInst(dato)
@@ -187,11 +185,6 @@ const Inicio = () => {
       </div>
     )
   })
-
-  const handleCapture = () => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    setCapturedImage(imageSrc);
-  };
 
   const generateUniqueFileName = (username) => {
     const timestamp = Date.now();

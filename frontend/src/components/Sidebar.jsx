@@ -41,12 +41,12 @@ const Sidebar = ({children}) => {
           {id: 2, label:'Usuarios', icon: FaUser, link:'/usuarios'},
           {id: 3, label:'Recintos', icon: FaClipboardList, link:'/recintos'},
           {id: 4, label:'Candidatos', icon: FaThList, link:'/candidatos'},
-          {id: 5, label:'Revisión', icon: FaThList, link:'/revision_sufragio'},
+          //{id: 5, label:'Revisión', icon: FaThList, link:'/revision_sufragio'},
         ])
         //Si el rol es de supervisor
       }else if(result.data.token.data.id_rol === 2){
-        setMenuArray([
-          {id: 1, label:'Parroquias', icon: FaClipboardList, link:'/recintos_supervisor'},
+        setMenuArray([          
+          {id: 2, label:'Sufragar', icon: FaThList, link:'sufragar'}
         ])
         //Si el rol es de coordinador
       }else if(result.data.token.data.id_rol === 3){

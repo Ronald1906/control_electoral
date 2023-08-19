@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const conexion = require('../Database/database');
+const verifyTokenMiddleware= require('../index')
 
 //Registrar los datos de las mesas
 router.post('/', async(req,res)=>{
@@ -60,5 +61,85 @@ router.get('/', async(req,res)=>{
         console.log('Error en RegistrosController en el metodo get /: '+ error)
     }
 })
+
+
+router.get('/totales', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const consulta= await conexion.query('SELECT * FROM tbl_listas')
+        const array=[]
+
+        for(let i=0; i<consulta.rowCount; i++){
+            array.push(
+                {nombre: consulta.rows[i].nombre_lista, total:0, num_lista: consulta.rows[i].num_lista}
+            )
+        }
+
+        const consulta2= await conexion.query("SELECT * FROM tbl_votos")
+
+        const resultado={}
+
+        for(let i=0; i<consulta2.rowCount; i++){
+            for (const item of array.concat(consulta2.rows[i].votos)) {
+                if (!resultado[item.nombre] && item.num_lista !== undefined) {
+                    resultado[item.nombre] = {
+                        total: 0,
+                        nombre: item.nombre,
+                        num_lista: item.num_lista
+                    };
+                }
+                if (resultado[item.nombre]) {
+                    resultado[item.nombre].total += item.total;
+                }
+            }
+        }
+
+        const resultadoFinal = Object.values(resultado);
+
+        res.send(resultadoFinal)
+
+    } catch (error) {
+        console.log('Error en totales: '+ error)
+    }
+})
+
+router.get('/totalesp', async(req,res)=>{
+    try {
+        const consulta= await conexion.query('SELECT * FROM tbl_listas')
+        const array=[]
+
+        for(let i=0; i<consulta.rowCount; i++){
+            array.push(
+                {nombre: consulta.rows[i].nombre_lista, total:0, num_lista: consulta.rows[i].num_lista}
+            )
+        }
+
+        const consulta2= await conexion.query("SELECT * FROM tbl_votos")
+
+        const resultado={}
+
+        for(let i=0; i<consulta2.rowCount; i++){
+            for (const item of array.concat(consulta2.rows[i].votos)) {
+                if (!resultado[item.nombre] && item.num_lista !== undefined) {
+                    resultado[item.nombre] = {
+                        total: 0,
+                        nombre: item.nombre,
+                        num_lista: item.num_lista
+                    };
+                }
+                if (resultado[item.nombre]) {
+                    resultado[item.nombre].total += item.total;
+                }
+            }
+        }
+
+        const resultadoFinal = Object.values(resultado);
+
+        res.send(resultadoFinal)
+
+    } catch (error) {
+        console.log('Error en totales: '+ error)
+    }
+})
+
 
 module.exports = router

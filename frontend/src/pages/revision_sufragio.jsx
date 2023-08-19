@@ -15,6 +15,8 @@ const Revision_sufragio = () => {
   const [Votos, setVotos]= useState([])
   const [DlgImg, setDlgImg]= useState(false)
   const [FileImg, setFileImg]= useState(null)
+  const [Usuario, setUsuario]= useState('')
+  const [IdVoto, setIdVoto]= useState(null)
   const router= useRouter()
 
   const consulta= (()=>{
@@ -35,6 +37,8 @@ const Revision_sufragio = () => {
     }).then((result)=>{
       if(result.data.token.data.id_rol !== 1){
         router.push('/')
+      }else{
+        setUsuario(result.data.token.data.users)
       }
     })
   },[router])
@@ -46,7 +50,7 @@ const Revision_sufragio = () => {
   const BtnRevision = (rowData) => {
     return (
       <div>
-        <Button label='Votación'  className="p-button p-button-success mr-2" onClick={() => IniciarRevision(rowData)}   />
+        <Button label='Revisión'  className="p-button p-button-success mr-2" onClick={() => IniciarRevision(rowData)}   />
       </div>
     )
   }
@@ -54,6 +58,7 @@ const Revision_sufragio = () => {
   const IniciarRevision=(e)=>{
     let dato= e
     setVotos(dato.votos)
+    setIdVoto(dato._id)
     setDlgRevision(true)
   }
 
@@ -89,8 +94,23 @@ const Revision_sufragio = () => {
     setFileImg(null)
   })
 
+  const generateUniqueFileName = (username) => {
+    const timestamp = Date.now();
+    return `${username}_${timestamp}.jpg`; // Ejemplo de formato de nombre único
+  };
+
   const Actualizar=(()=>{
-    
+    const uniqueFileName = generateUniqueFileName(Usuario);
+    axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/validado',{
+      nombre_img: uniqueFileName,
+      id_junta: IdVoto
+    },{
+      headers:{
+        token_eleccion_2023_app: localStorage.getItem('token_eleccion_2023_app'),
+      }
+    }).then((result)=>{
+      console.log(result.data)
+    })
   })
 
   return (
