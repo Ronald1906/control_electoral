@@ -523,7 +523,7 @@ router.post('/login', async(req,res)=>{
             
             if(validar_pass == true && datos.user == consulta.rows[0].users){
             
-                const expiracion = Math.floor(Date.now() / 1000) + (60 * 60 * 12); // 12 horas de expiración
+                const expiracion = Math.floor(Date.now() / 1000) + (60 * 60 * 24); // 12 horas de expiración
 
                 let objeto={
                     users: consulta.rows[0].users,
@@ -958,5 +958,34 @@ router.post('/super_imgvot',verifyTokenMiddleware, upload3.single('file'), async
     }  
 })
 
+router.get('/votos',verifyTokenMiddleware, async(req,res)=>{
+    try {
+        await conexion.query("SELECT * FROM tbl_votos").then((result)=>{
+            res.send(result.rows)
+        })
+    } catch (error) {
+        console.log('Error en Usercontroller en el metodo get /votos: '+ error)
+    }
+})
+
+router.post('/actualizar_votos', verifyTokenMiddleware, async(req,res)=>{
+    try {
+        const datos= req.body
+        await conexion.query("UPDATE tbl_votos SET votos = $1 WHERE cod_recinto = $2 AND direccion = $3 AND img_ejecucion = $4 AND nombre_recinto= $5 AND nombre_zona = $6 AND num_junta = $7",[
+            datos.votos, datos.junta.cod_recinto, datos.junta.direccion, datos.junta.img_ejecucion, datos.junta.nombre_recinto, datos.junta.nombre_zona, datos.junta.num_junta
+        ]).then((result)=>{
+            if(result.rowCount>0){
+                console.log(result.rows)
+                res.send({
+                    title:'¡Actualizado!',
+                    icon: 'success',
+                    text: 'Junta Actualizada'
+                })
+            }
+        })
+    } catch (error) {
+        console.log('Error en UserController en el metodo post /actualizar: '+error)
+    }
+})
 
 module.exports = router   

@@ -12,6 +12,7 @@
     "axios": "^1.4.0",
     "eslint": "8.45.0",
     "eslint-config-next": "13.4.10",
+    "file-saver": "^2.0.5",
     "next": "13.4.10",
     "primeicons": "^6.0.1",
     "primereact": "^9.6.0",

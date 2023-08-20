@@ -318,6 +318,7 @@ const sufragar = () => {
   return (
     <Sidebar>
       <DataTable value={Juntas} paginator stripedRows rows={10} filterDisplay='row' >
+        <Column field='cod_recinto' header='Cod Recinto' align='center' />
         <Column field='nombre_recinto' header='Recinto' align='center' />
         <Column field='num_junta' header='Junta' align='center' />
         {/* <Column field='instalacion' header='Instaladas'align='center' filter filterField='instalacion' showClearButton={false} showFilterMenu={false}  style={{ minWidth: '5rem' }} filterElement={InstalacionTemplateFilter} /> */}

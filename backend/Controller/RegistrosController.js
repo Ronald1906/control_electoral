@@ -62,7 +62,6 @@ router.get('/', async(req,res)=>{
     }
 })
 
-
 router.get('/totales', verifyTokenMiddleware, async(req,res)=>{
     try {
         const consulta= await conexion.query('SELECT * FROM tbl_listas')
