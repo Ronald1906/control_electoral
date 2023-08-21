@@ -131,7 +131,6 @@ const sufragar = () => {
     let dato= e
     let fecha= new Date().toLocaleTimeString().substring(0,2)
     let intfecha= parseInt(fecha)
-    if(intfecha <=17){
       if(dato.ejecutado == false){
         consulta()
         setJuntaV(dato)
@@ -143,13 +142,6 @@ const sufragar = () => {
           text: 'Esta Junta ya ha sido registrada'
         })
       }
-    }else{
-      Swal.fire({
-        title:'¡Error!',
-        icon: 'error',
-        text: 'El proceso de ingreso de la votación es pasada las 17:00'
-      })
-    }
   }
 
   const IniciarInstalacion=(e)=>{

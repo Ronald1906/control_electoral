@@ -988,4 +988,62 @@ router.post('/actualizar_votos', verifyTokenMiddleware, async(req,res)=>{
     }
 })
 
+router.get('/eliminar_duplicados', async(req,res)=>{
+    try {
+        const consulta= await conexion.query("SELECT * FROM tbl_votos")
+
+        let array_nuevo=[]
+
+        let objetosUnicos=[]
+
+        for(let i=0; i<consulta.rowCount; i++){
+
+            const existeObjeto = array_nuevo.some(objeto => (
+                objeto.cod_recinto === consulta.rows[i].cod_recinto &&
+                objeto.direccion === consulta.rows[i].direccion &&
+                objeto.nombre_recinto === consulta.rows[i].nombre_recinto &&
+                objeto.nombre_zona === consulta.rows[i].nombre_zona &&
+                objeto.num_junta === consulta.rows[i].num_junta 
+            ));
+
+            if (!existeObjeto) {
+                array_nuevo.push(consulta.rows[i]);
+            }
+
+            objetosUnicos = array_nuevo.filter((objeto, index, self) => (
+                index === self.findIndex(
+                  o => (
+                    o.cod_recinto === objeto.cod_recinto &&
+                    o.direccion === objeto.direccion &&
+                    o.nombre_recinto === objeto.nombre_recinto &&
+                    o.nombre_zona === objeto.nombre_zona &&
+                    o.num_junta === objeto.num_junta 
+                  )
+                )
+            ));
+        }
+
+
+        res.send({consultados: consulta.rowCount, filtrado:objetosUnicos.length, datos: objetosUnicos})
+
+        await conexion.query("DELETE FROM tbl_votos")
+
+        for(let i=0;i<objetosUnicos.length; i++){
+            await conexion.query("INSERT INTO tbl_votos (cod_recinto, direccion, img_ejecucion, nombre_recinto, nombre_zona, num_junta, votos) VALUES($1, $2, $3, $4, $5, $6, $7)",[
+                objetosUnicos[i].cod_recinto, objetosUnicos[i].direccion, objetosUnicos[i].img_ejecucion, objetosUnicos[i].nombre_recinto, objetosUnicos[i].nombre_zona, objetosUnicos[i].num_junta, objetosUnicos[i].votos
+            ]).then((result)=>{
+                if(result.rowCount> 0){
+                    console.log(result)
+                }else{
+                    console.log('no se registro')
+                }
+            })
+        }
+
+
+    } catch (error) {
+        console.log('Error en UserController en e metodo get /eliminar_duplicados: '+ error)
+    }
+})
+
 module.exports = router   
