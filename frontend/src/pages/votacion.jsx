@@ -33,8 +33,15 @@ const votacion = () => {
     return (
       <div>
         <Button label='Revision'  className="p-button p-button-success mr-2" onClick={() => IniciaRevision(rowData)}   />
+        <Button label='Imagen'  className="p-button p-button mr-2" onClick={() => ImagenRevision(rowData)}   />
       </div>
     )
+  }
+
+  const ImagenRevision=(e)=>{
+    let dato= e
+    let imagen= process.env.NEXT_PUBLIC_IMG_BACK+dato.img_ejecucion
+    window.open(imagen)
   }
 
   const IniciaRevision=(e)=>{

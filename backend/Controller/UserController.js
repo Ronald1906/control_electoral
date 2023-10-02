@@ -916,29 +916,58 @@ router.post('/registro_supervisor', verifyTokenMiddleware, async(req,res)=>{
     try{
         const datos= req.body
 
-        const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= $1",[datos.usuario])
+        //const revision
+        const consulta= await conexion.query("SELECT * FROM tbl_votos WHERE direccion = $1 AND num_junta= $2 AND cod_recinto = $3 AND nombre_recinto = $4 AND nombre_zona = $5",[
+            datos.junta.direccion, datos.junta.num_junta, datos.junta.cod_recinto, datos.junta.nombre_recinto, datos.junta.nombre_zona
+        ])
 
-        const recintos= consulta.rows[0].recintos_surpv
+        if(consulta.rowCount>0){
+            const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= $1",[datos.usuario])
 
-        const filtro_junta= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+            const recintos= consulta.rows[0].recintos_surpv
 
-        filtro_junta[0].hora_ejecucion= datos.hora
-        filtro_junta[0].fecha_ejecucion= datos.fecha
-        filtro_junta[0].img_ejecucion= datos.img_name
-        filtro_junta[0].ejecutado=true
+            const filtro_junta= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
 
-        await conexion.query("UPDATE tbl_users SET recintos_surpv = $1 WHERE users = $2",
-        [recintos, datos.usuario])
+            filtro_junta[0].hora_ejecucion= datos.hora
+            filtro_junta[0].fecha_ejecucion= datos.fecha
+            filtro_junta[0].img_ejecucion= datos.img_name
+            filtro_junta[0].ejecutado=true
 
-        await conexion.query("INSERT INTO tbl_votos (cod_recinto, direccion, img_ejecucion, nombre_recinto, nombre_zona, num_junta, votos) VALUES($1, $2, $3, $4, $5, $6, $7)",[
-            filtro_junta[0].cod_recinto, filtro_junta[0].direccion, filtro_junta[0].img_ejecucion, filtro_junta[0].nombre_recinto, filtro_junta[0].nombre_zona, filtro_junta[0].num_junta, datos.votos
-        ]).then((result)=>{
-            if(result.rowCount>0){
-                res.send({agregado: true})
-            }else{
-                console.log({agregado: false})
-            }
-        })
+            await conexion.query("UPDATE tbl_users SET recintos_surpv = $1 WHERE users = $2",
+            [recintos, datos.usuario]).then((result)=>{
+                if(result.rowCount>0){
+                    res.send({agregado: true, actualizar: false })
+                }else{
+                    console.log({agregado: false})
+                }
+            })
+
+        }else{
+            const consulta= await conexion.query("SELECT * FROM tbl_users WHERE users= $1",[datos.usuario])
+
+            const recintos= consulta.rows[0].recintos_surpv
+
+            const filtro_junta= recintos.filter((e)=>e.nombre_zona== datos.junta.nombre_zona && e.nombre_recinto == datos.junta.nombre_recinto && e.num_junta == datos.junta.num_junta)
+
+            filtro_junta[0].hora_ejecucion= datos.hora
+            filtro_junta[0].fecha_ejecucion= datos.fecha
+            filtro_junta[0].img_ejecucion= datos.img_name
+            filtro_junta[0].ejecutado=true
+
+            await conexion.query("UPDATE tbl_users SET recintos_surpv = $1 WHERE users = $2",
+            [recintos, datos.usuario])
+
+            await conexion.query("INSERT INTO tbl_votos (cod_recinto, direccion, img_ejecucion, nombre_recinto, nombre_zona, num_junta, votos) VALUES($1, $2, $3, $4, $5, $6, $7)",[
+                filtro_junta[0].cod_recinto, filtro_junta[0].direccion, filtro_junta[0].img_ejecucion, filtro_junta[0].nombre_recinto, filtro_junta[0].nombre_zona, filtro_junta[0].num_junta, datos.votos
+            ]).then((result)=>{
+                if(result.rowCount>0){
+                    res.send({agregado: true, actualizar: false})
+                }else{
+                    console.log({agregado: false})
+                }
+            })
+        }
+    
 
 
     } catch (error) {

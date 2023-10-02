@@ -11,7 +11,7 @@ import { InputNumber } from 'primereact/inputnumber'
 import { FileUpload } from 'primereact/fileupload'
 import Swal from 'sweetalert2'
 
-const sufragar = () => {
+const Sufragar = () => {
   const [Juntas, setJuntas]= useState([])
   const [DlgVotacion, setDlgVotacion]= useState(false)
   const [DlgInstalacion, setDlgInstalacion]= useState(false)
@@ -260,21 +260,32 @@ const sufragar = () => {
         }
       }).then((result)=>{
         if(result.data.resultado= true){
-          const formData = new FormData();
-          formData.append('file', FileImg, uniqueFileName);
-          axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/super_imgvot', formData,{
-            headers:{
-              token_eleccion_2023_app: token
-            }
-          }).then((results)=>{
-            CDlgImgV()
-            consulta2(Usuario)
-            Swal.fire({
-              title: results.data.title,
-              icon: results.data.icon,
-              text: results.data.text
+          if( result.data.actualizar= false){
+            const formData = new FormData();
+            formData.append('file', FileImg, uniqueFileName);
+            axios.post(process.env.NEXT_PUBLIC_BACKEND+'usuarios/super_imgvot', formData,{
+              headers:{
+                token_eleccion_2023_app: token
+              }
+            }).then((results)=>{
+              CDlgImgV()
+              consulta2(Usuario)
+              Swal.fire({
+                title: results.data.title,
+                icon: results.data.icon,
+                text: results.data.text
+              })
             })
-          })
+          }else{
+            CDlgImgV()
+              consulta2(Usuario)
+              Swal.fire({
+                title: '¡Mesa Actualizada!',
+                icon: 'success',
+                text: 'Esta junta ya ha estado actualizada'
+              })
+          }
+          
 
         }else{
           setDlgImgV(false)
@@ -344,4 +355,4 @@ const sufragar = () => {
   )
 }
 
-export default sufragar
+export default Sufragar

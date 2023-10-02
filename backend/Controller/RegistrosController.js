@@ -94,7 +94,25 @@ router.get('/totales', verifyTokenMiddleware, async(req,res)=>{
 
         const resultadoFinal = Object.values(resultado);
 
-        res.send(resultadoFinal)
+        let arrayF=[]
+        let totalvotos=0
+
+        for(let i=0; i<resultadoFinal.length; i++){
+            totalvotos+=parseFloat(resultadoFinal[i].total) * 9.5
+        }
+
+
+        for(let i=0; i<resultadoFinal.length; i++){
+            let valor= parseFloat(resultadoFinal[i].total) * 9.5
+            let porciento= (valor*100)/totalvotos
+
+            let redondeo= Math.ceil(valor.toFixed(2))
+
+            arrayF.push({...resultadoFinal[i],total: redondeo, porcentaje: porciento})
+        }
+        
+
+        res.send(arrayF)
 
     } catch (error) {
         console.log('Error en totales: '+ error)

@@ -35,6 +35,7 @@ const Dashboard = () => {
         const datos=result.data
         const ordenado= datos.sort((a,b)=>b.total - a.total)
         setListas(ordenado)
+        console.log(ordenado)
       })
     })
 
